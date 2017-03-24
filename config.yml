@@ -1,0 +1,17 @@
+# site title
+title: 点点行行
+
+# github user
+user: wellls
+
+# issue repo
+repo: blogic
+
+# multi-author
+authors: bitstring 
+
+# per page
+per_page: 10
+
+#sandbox
+sandbox: true 
