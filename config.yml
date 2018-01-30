@@ -1,17 +1,30 @@
 # site title
 title: 点点行行
 
-# github user
+# user name or organization name
 user: wellls
 
-# issue repo
-repo: blogic
+# issue repository
+repository: blog
 
 # multi-author
-authors: 
+authors:
 
-# per page
-per_page: 10
+# token
+# token should be separated by '#'
+# example: 5#c31bffc137f44faf7efc4a84da827g7ca2cfeaa
+token: d6b389c0d9d5ce5b5fd8bef75a304c97564872c9
 
-#sandbox
-sandbox: true 
+# posts per page
+perpage: 8
+
+
+# advance config
+
+# organization repository (?)
+organization: false
+
+# post order
+# order by create time" or "update time"
+# 'UPDATED_AT' or 'CREATED_AT'
+order: 'CREATED_AT'
