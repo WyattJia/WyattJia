@@ -11,7 +11,7 @@ user: wellls
 repository: blog
 
 # multi-author
-authors:
+authors: wellls
 
 # token
 # token should be separated by '#'
@@ -25,3 +25,4 @@ perpage: 8
 # order by create time" or "update time"
 # 'UPDATED_AT' or 'CREATED_AT'
 order: 'CREATED_AT'
+
