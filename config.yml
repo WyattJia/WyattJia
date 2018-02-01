@@ -19,7 +19,7 @@ authors: wellls
 token: b#8e3b9a3519185f231eb13074fb4927529c7e868 
 
 # posts per page
-perpage: 8
+perpage: 25 
 
 # post order
 # order by create time" or "update time"
