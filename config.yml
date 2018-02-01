@@ -1,3 +1,6 @@
+# organization repository (?)
+organization: false
+
 # site title
 title: 点点行行
 
@@ -17,12 +20,6 @@ token: 5#2fed925ba1f6c8adf7bf3925d42d83f5ed3ff02
 
 # posts per page
 perpage: 8
-
-
-# advance config
-
-# organization repository (?)
-organization: false
 
 # post order
 # order by create time" or "update time"
