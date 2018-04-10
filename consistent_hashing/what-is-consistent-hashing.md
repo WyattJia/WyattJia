@@ -29,4 +29,42 @@
   1. 根据 object 求 hash （与之前的第一步相同）；
   2. 把 cache 服务器也求 hash ，然后把 object 和 cache 的值放到同一个 hash 空间，通过一定的规则决定每个 object 落在哪一个 cache 中。
 
+### 实现细节
+
+> 成环
+
+通常的 Hash 算法都是将 value 映射到一个 32 位的 key 值，也就是 0 ~ 2^32-1 的数值空间。我们将 key 值空间想象成一个首尾相接的圆环。
+
+![](./images/consistent-hash-1.jpg)
+
+> 映射 object 到环上
+
+假设有四个需要存储的 object ，先求出相应的 hash 值，根据 hash 值映射到环上。
+
+![](./images/consistent-hash-2.jpg)
+
+> 映射 cache 到环上
+
+假设有三台 cache 服务器,分别叫做 A, B, C 。用同样的方法求出 hash 值，映射到同一个环上。
+
+![](./images/consistent-hash-3.jpg)
+
+> 按照规则匹配 object 到 cache 上。
+
+让 object 在换上顺时针转动，遇到的第一个 cache 就是对应的 cache 服务器。
+
+结果就是 object1 -> cache A, object2,object3 -> cache C, object4 -> cache B。
+
+![](./images/consistent-hash-3.jpg)
+
+#### 解决问题
+
+新的哈希一致性算法解决了 cache 服务器增减时 key 失效的问题。现在无论增减 cache 服务器，只会有一部分 key 失效。
+
+假如我们要新加一台 cache 服务器 D,
+
+![](./images/consistent-hash-4.svg)
+
+cache D 服务器落在了 cache C 和 cache A 之间，那么失效的只有部分落在 cache A 服务器上的 key 了，现在变成落在 cache D 上了。cache B 和 cache C 上的 key 都没有失效。 
+
 
