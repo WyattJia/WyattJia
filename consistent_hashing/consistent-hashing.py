@@ -89,9 +89,31 @@ def create_cluster():
     return c
 
 
+def find_entries(c: Cluster, entries: List) -> Str:
+    for e in entries:
+        if e == c.get(e):
+            return '重新找到了 entry: {}'.format(str(e))
+        else:
+            return "entry {} 已失效".format(str(e))
+
+
 def main():
     c = create_cluster()
-    pass
+    entries = []
+    entry_items = ["i", "have", "a", "pen", "an", "apple",  "applepen",
+                   "pineapple", "pineapplepen", "PPAP"]
+
+    for item in entry_items:
+        entries.append(Entry(item))
+
+    for e in entries:
+        c.put(e)
+
+    c.add_server(Server("192.168.0.6"))
+
+    find_entries(c, entries)
+
 
 if __name__ == "__main__":
-    print("Hello world")
+    main()
+
