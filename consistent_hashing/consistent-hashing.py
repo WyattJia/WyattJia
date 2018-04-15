@@ -89,7 +89,7 @@ def create_cluster():
     return c
 
 
-def find_entries(c: Cluster, entries: List) -> Str:
+def find_entries(c: Cluster, entries: List) -> str:
     for e in entries:
         if e == c.get(e):
             return '重新找到了 entry: {}'.format(str(e))
