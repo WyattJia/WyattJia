@@ -72,7 +72,7 @@ class Cluster:
     def add_server(self, s:Server) -> bool:
         if _size >= _SERVER_SIZE_MAX or len(_servers) >= _SERVER_SIZE_MAX:
             return False
-        else len(_servers) < _SERVER_SIZE_MAX:
+        elif len(_servers) < _SERVER_SIZE_MAX:
             _servers.append(server)
             self._size = _size + 1
             return True
