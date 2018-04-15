@@ -57,9 +57,10 @@ class Cluster:
 
     def put(self, e:Entry) -> None:
         _index = string_hashcode(e) % size
-        server = Server(_index)
-        server = server.put(e)
-        _servers.append(server)    # servers[index].put(e);
+        for i in _servers:
+            # typeof(i) == Server
+            if i._name == _index:
+                i.put(e)
 
     def get(self, e: Entry) -> Entry:
         _index = string_hashcode(e) % size
@@ -69,15 +70,26 @@ class Cluster:
                 return i.get(e)
 
     def add_server(self, s:Server) -> bool:
-        if _size >= _SERVER_SIZE_MAX:
+        if _size >= _SERVER_SIZE_MAX or len(_servers) >= _SERVER_SIZE_MAX:
             return False
-        # server = Server(_SERVER_SIZE_MAX)
-        # _servers.append(server)
-        self._size = _size + 1
-        return True
+        else len(_servers) < _SERVER_SIZE_MAX:
+            _servers.append(server)
+            self._size = _size + 1
+            return True
+
+def createCluster():
+    c = Cluster()
+    c.add_server(Server("192.168.0.0"))
+    c.add_server(Server("192.168.0.1"))
+    c.add_server(Server("192.168.0.2"))
+    c.add_server(Server("192.168.0.3"))
+    c.add_server(Server("192.168.0.4"))
+    c.add_server(Server("192.168.0.5"))
+    return c
 
 
 def main():
+    c = createCluster()
     pass
 
 if __name__ == "__main__":
