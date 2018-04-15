@@ -77,7 +77,8 @@ class Cluster:
             self._size = _size + 1
             return True
 
-def createCluster():
+
+def create_cluster():
     c = Cluster()
     c.add_server(Server("192.168.0.0"))
     c.add_server(Server("192.168.0.1"))
@@ -89,7 +90,7 @@ def createCluster():
 
 
 def main():
-    c = createCluster()
+    c = create_cluster()
     pass
 
 if __name__ == "__main__":
