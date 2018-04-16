@@ -30,6 +30,10 @@ def string_hashcode(key: str, encoding='utf-8') -> int:
     return int(m, 16)
 
 
+def first_key(dictionary: OrderedDict):
+    return next(iter(dictionary.items))
+
+
 class Entry(str):
 
     _key = ''
@@ -73,13 +77,17 @@ class Cluster:
         _index = string_hashcode(e) % self._size
         return self._servers[_index].get(e)
 
-    def route_server(self, hash: int) -> Server:
+    def route_server(self, _hash: int) -> Server:
         if len(self._servers) == 0:
             return None
-        elif self._servers.get(hash) is None:
-            # tail_map = OrderedDict()
-            pass
-        
+        elif self._servers.get(_hash) is None:
+            tailed_map = tail_map(self._servers, _hash)
+            if bool(tailed_map):
+                _hash = first_key(self._servers)
+            else:
+                _hash = first_key(tailed_map)
+        return self._servers.get(_hash)
+
     def add_server(self, s: Server) -> bool:
         if self._size >= self._SERVER_SIZE_MAX or len(self._servers) >= self._SERVER_SIZE_MAX:
             return False
