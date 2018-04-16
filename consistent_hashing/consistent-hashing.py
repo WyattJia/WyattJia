@@ -13,6 +13,21 @@ Consistent Hashing demo in Python.
 
 from hashlib import md5
 from typing import Dict, List
+from collections import OrderedDict
+
+
+def treemap(dictionary: Dict) -> OrderedDict:
+    return OrderedDict(sorted(dictionary.items()))
+
+
+def tail_map(dictionary: Dict, from_key) -> Dict:
+    tailed_map = {key: value for key, value in dictionary.items() if key >= from_key}
+    return OrderedDict(tailed_map)
+
+
+def string_hashcode(key: str, encoding='utf-8') -> int:
+    m = md5(key.encode(encoding)).hexdigest()
+    return int(m, 16)
 
 
 class Entry(str):
@@ -47,27 +62,29 @@ class Cluster:
 
     _SERVER_SIZE_MAX = 1024
 
-    _servers: List[Server] = []
+    _servers = OrderedDict()
     _size = 0
 
     def put(self, e: Entry) -> None:
-        _index = Cluster.string_hashcode(e) % self._size
+        _index = string_hashcode(e) % self._size
         self._servers[_index].put(e)
 
-    @staticmethod
-    def string_hashcode(key, encoding='utf-8'):
-        m = md5(key.encode(encoding)).hexdigest()
-        return int(m, 16)
-
     def get(self, e: Entry) -> Entry:
-        _index = Cluster.string_hashcode(e) % self._size
+        _index = string_hashcode(e) % self._size
         return self._servers[_index].get(e)
 
+    def route_server(self, hash: int) -> Server:
+        if len(self._servers) == 0:
+            return None
+        elif self._servers.get(hash) is None:
+            # tail_map = OrderedDict()
+            pass
+        
     def add_server(self, s: Server) -> bool:
         if self._size >= self._SERVER_SIZE_MAX or len(self._servers) >= self._SERVER_SIZE_MAX:
             return False
         elif len(self._servers) < self._SERVER_SIZE_MAX:
-            self._servers.append(s)
+            self._servers.update({string_hashcode(str(s._name)): s})
             self._size = self._size + 1
             return True
 
