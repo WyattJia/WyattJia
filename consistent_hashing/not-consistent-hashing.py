@@ -16,7 +16,6 @@ from typing import Dict, List
 
 
 class Entry(str):
-
     _key = ''
 
     def __init__(self, key):
@@ -28,7 +27,6 @@ class Entry(str):
 
 
 class Server:
-
     _name = ''
     _entries = {}
 
@@ -44,7 +42,6 @@ class Server:
 
 
 class Cluster:
-
     _SERVER_SIZE_MAX = 1024
 
     _servers: List[Server] = []
@@ -92,10 +89,9 @@ def find_entries(c: Cluster, entries: List) -> None:
 
 
 def main():
-
     c = create_cluster()
     entries = []
-    entry_items = ["i", "have", "a", "pen", "an", "apple",  "applepen",
+    entry_items = ["i", "have", "a", "pen", "an", "apple", "applepen",
                    "pineapple", "pineapplepen", "PPAP"]
 
     for item in entry_items:
@@ -104,7 +100,7 @@ def main():
     for e in entries:
         c.put(e)
 
-    c.add_server(Server("192.168.0.6")) # 如果增加一个 Server，大部分 object 都会失效。
+    c.add_server(Server("192.168.0.6"))  # 如果增加一个 Server，大部分 object 都会失效。
 
     find_entries(c, entries)
 

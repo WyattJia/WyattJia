@@ -39,7 +39,6 @@ def first_key(dictionary: OrderedDict):
 
 
 class Entry(str):
-
     _key = ''
 
     def __init__(self, key):
@@ -51,7 +50,6 @@ class Entry(str):
 
 
 class Server:
-
     _name = ''
     _entries = {}
 
@@ -67,7 +65,6 @@ class Server:
 
 
 class Cluster:
-
     _SERVER_SIZE_MAX = 1024
 
     _servers = OrderedDict()
@@ -80,8 +77,7 @@ class Cluster:
         server = self.route_server((string_hashcode(e)))
         return server.get(e)
 
-    def route_server(self, _hash: int) -> Server:
-
+    def route_server(self, _hash: int) -> None:
         if len(self._servers) == 0:
             return None
         elif self._servers.get(_hash) is None:
@@ -121,10 +117,9 @@ def find_entries(c: Cluster, entries: List) -> None:
 
 
 def main():
-
     c = create_cluster()
     entries = []
-    entry_items = ["i", "have", "a", "pen", "an", "apple",  "applepen",
+    entry_items = ["i", "have", "a", "pen", "an", "apple", "applepen",
                    "pineapple", "pineapplepen", "PPAP"]
 
     for item in entry_items:
