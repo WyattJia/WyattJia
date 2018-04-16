@@ -104,7 +104,7 @@ def main():
     for e in entries:
         c.put(e)
 
-    c.add_server(Server("192.168.0.6")) # 如果增加一个 Server，大部分 object 都会失效。
+    c.add_server(Server("192.168.0.6"))
 
     find_entries(c, entries)
 
