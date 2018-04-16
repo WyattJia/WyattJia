@@ -31,7 +31,11 @@ def string_hashcode(key: str, encoding='utf-8') -> int:
 
 
 def first_key(dictionary: OrderedDict):
-    return next(iter(dictionary.items))
+    try:
+        first_item = next(iter(dictionary.items()))
+        return first_item[0]
+    except StopIteration as error:
+        return None
 
 
 class Entry(str):
@@ -70,28 +74,28 @@ class Cluster:
     _size = 0
 
     def put(self, e: Entry) -> None:
-        _index = string_hashcode(e) % self._size
-        self._servers[_index].put(e)
+        self.route_server(string_hashcode(e)).put(e)
 
     def get(self, e: Entry) -> Entry:
-        _index = string_hashcode(e) % self._size
-        return self._servers[_index].get(e)
+        server = self.route_server((string_hashcode(e)))
+        return server.get(e)
 
     def route_server(self, _hash: int) -> Server:
+
         if len(self._servers) == 0:
             return None
         elif self._servers.get(_hash) is None:
             tailed_map = tail_map(self._servers, _hash)
-            if bool(tailed_map):
+            if not bool(tailed_map):
                 _hash = first_key(self._servers)
             else:
                 _hash = first_key(tailed_map)
         return self._servers.get(_hash)
 
     def add_server(self, s: Server) -> bool:
-        if self._size >= self._SERVER_SIZE_MAX or len(self._servers) >= self._SERVER_SIZE_MAX:
+        if self._size >= self._SERVER_SIZE_MAX:
             return False
-        elif len(self._servers) < self._SERVER_SIZE_MAX:
+        else:
             self._servers.update({string_hashcode(str(s._name)): s})
             self._size = self._size + 1
             return True
@@ -130,6 +134,7 @@ def main():
         c.put(e)
 
     c.add_server(Server("192.168.0.6"))
+    c.add_server(Server("11"))
 
     find_entries(c, entries)
 
