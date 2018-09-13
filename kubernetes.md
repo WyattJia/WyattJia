@@ -40,3 +40,17 @@
     kubectl get events
     ```
     
+---
+---
+
+### 几个核心组件
+
+#### etcd
+
+---
+
+#### kube-apiserver
+
+---
+
+#### kube-controller-manager
