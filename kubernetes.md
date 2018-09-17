@@ -49,7 +49,7 @@
 
 ### Container
 
-Docker container
+Docker container， rkt container。镜像的运行时就是容器。
 
 ---
 
@@ -80,17 +80,55 @@ spec:
 
 ### Node
 
+Node（节点） 是 Pod 运行主体。为了方便管理，每个 Node 上面都会有 container runtime ，常见的 container runtime 是 docker 或者 rkt 。以及还需要有 `kubelet`（维护容器生命周期， volumn、 网络管理等等）、`kuber-proxy`（负载均衡，服务发现等） 等 node processes （节点共用工具）。 
+
 ---
 
 ### Namespace
+
+一组资源和对象的抽象集合。
 
 ---
 
 ### Service
 
+应用服务的抽象，通过 labels 提供负载均衡和服务发现。匹配 labels 的 Pod IP PORTS 组成的 endpoints ，由 kube-proxy 负责将 ip 负载均衡到这些 endpoints 上面。 
+
+没有 service 都会分配一个 cluster ip 和 DNS ，仅 cluster 内部可以访问。集群内部的容器都通过该地址和 DNS 来访问服务。
+
+example:
+
+```yaml
+apiVerson: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  port: 8078 # the port that this service should serve on
+  name: http
+  targetPort: 80
+  protocol: TCP
+selector:
+  app: nginx
+
+```
+
 ---
 
 ### Label
+
+识别 Kubernetes 对象的标签，以键值对的方式附加到对象上，不唯一。label 定义好之后，其他对象可以使用 Label Selector 来选择一组相同label 的对象。
+
+Label Selector example:
+  * 等式 `app=nginx` `env!=production`
+  * 集合 `env in (production, qa)`
+  * 多个 label `and` 关系 `app=nginx, env=test`
+
+---
+
+### Annotations
+
+Annotations 是 key/value 形式附加于对象的注解。不同于 Labels 用于标志和选择对象，Annotations 则是用来记录一些附加信息，用来辅助应用部署、安全策略以及调度策略等。比如 deployment 使用 annotations 来记录 rolling update 的状态。
 
 ---
 ---
