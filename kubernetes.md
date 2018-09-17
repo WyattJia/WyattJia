@@ -49,9 +49,32 @@
 
 ### Container
 
+Docker container
+
 ---
 
 ### Pod
+
+用 Pod 管理容器，一个 Pod 包括一个或者多个容器。容器间共享 PID， IPC， Network,UTS Namespace, 是 Kubernetes 的基本调度单位。有点类似 docker-compose 的一个 stack 。
+
+Kubernetes 中的所有对象都使用 manifest 来定义，如 json 或者 yaml 。一个 nginx 服务就可以定义为 nginx.yaml，其中包含一个 nginx 镜像的容器。
+
+Pod 对象示例：
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+    name: nginx
+    labels:
+        app: nginx
+spec:
+    containers:
+    - name: nginx
+      image: nginx
+      ports:
+      - containerPort: 80
+```
 
 ---
 
