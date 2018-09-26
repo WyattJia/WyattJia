@@ -20,10 +20,10 @@
   
   ```sql
   ELECT Websites.name, Websites.url, SUM(access_log.count) AS nums FROM (access_log
-INNER JOIN Websites
-ON access_log.site_id=Websites.id)
-GROUP BY Websites.name
-HAVING SUM(access_log.count) > 200;
+  INNER JOIN Websites
+  ON access_log.site_id=Websites.id)
+  GROUP BY Websites.name
+  HAVING SUM(access_log.count) > 200;
   ```
 
 * 事务
