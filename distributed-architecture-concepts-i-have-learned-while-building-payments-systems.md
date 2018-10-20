@@ -1,0 +1,1 @@
+source: [Distributed architecture concepts I learned while building a large payments system](https://blog.pragmaticengineer.com/distributed-architecture-concepts-i-have-learned-while-building-payments-systems/?utm_source=wanqu.co&utm_campaign=Wanqu+Daily&utm_medium=website)
