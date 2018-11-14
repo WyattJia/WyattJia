@@ -1,4 +1,5 @@
 Thumbs.db
 .DS_Store
 *.swp
-token.txt
+token.txt.idea
+.idea
