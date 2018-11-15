@@ -1,2 +1,2 @@
-### Here are my blog drafts.
+### These are my blog drafts and notes. 
 
