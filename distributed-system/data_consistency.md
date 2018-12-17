@@ -28,4 +28,16 @@ Quorum 协议有三个参数:
 2. R + W ≤ N 保证最终一致性
 
 
+How Quorum is calculated
 
+```math
+quorum = (sum_of_replication_factors / 2) + 1
+```
+
+```math
+sum_of_replication_factors = all_data_centers
+```
+
+###### 两段提交
+
+###### 分布式锁
