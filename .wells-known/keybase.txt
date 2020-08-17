@@ -1,0 +1,56 @@
+==================================================================
+https://keybase.io/bitstring
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://eventloop.live
+  * I am bitstring (https://keybase.io/bitstring) on keybase.
+  * I have a public key ASB1hfyql5s2uUNtrVVEl7u56NyjhnvZkbwx-3DTZEEUFAo
+
+To do so, I am signing this object:
+
+{
+  "body": {
+    "key": {
+      "eldest_kid": "012048a9ed3cf39873ebd610b0ffec7fe5491f78752df6025125c1b6a185defe6be40a",
+      "host": "keybase.io",
+      "kid": "01207585fcaa979b36b9436dad554497bbb9e8dca3867bd991bc31fb70d3644114140a",
+      "uid": "ee7c03523d4c05177e224b6749a3e519",
+      "username": "bitstring"
+    },
+    "merkle_root": {
+      "ctime": 1597634141,
+      "hash": "a89764bf1c37898428c14d342e87d74695f790e1d3742eaacc8aa442d390902a0178f0ebfde05da185dbb014f0c0071911dcc74c44facdf89f98b8a7dffd18b0",
+      "hash_meta": "6e02a6a386f371aa1d61423b01ccf581e323e028b4808ddf40317d1f6bf13462",
+      "seqno": 17298475
+    },
+    "service": {
+      "entropy": "Fm+M298YkAa7hXTq8vdmyWbG",
+      "hostname": "eventloop.live",
+      "protocol": "https:"
+    },
+    "type": "web_service_binding",
+    "version": 2
+  },
+  "client": {
+    "name": "keybase.io go client",
+    "version": "5.5.0"
+  },
+  "ctime": 1597634276,
+  "expire_in": 504576000,
+  "prev": "8dc7468f54ca8a4caffbb70c082b0f67e82f089d7145c0fcf602ff6c73175f6b",
+  "seqno": 9,
+  "tag": "signature"
+}
+
+which yields the signature:
+
+hKRib2R5hqhkZXRhY2hlZMOpaGFzaF90eXBlCqNrZXnEIwEgdYX8qpebNrlDba1VRJe7uejco4Z72ZG8Mftw02RBFBQKp3BheWxvYWTESpcCCcQgjcdGj1TKikyv+7cMCCsPZ+gvCJ1xRcD89gL/bHMXX2vEIJgcU5UF1Fro/cvuMd20Yh8Wq48wyGao827jbmaujBLWAgHCo3NpZ8RAdUM0zlEjcY4g3R043m1WXtuzvyZnoZzryeP1z2zEKCUNjJtlYKHszzFf190ePFcldyn+r9bdk2b7hc5tgzJNA6hzaWdfdHlwZSCkaGFzaIKkdHlwZQildmFsdWXEIOFdhy4xTJGnWl1VKw27+6tf6zlkBRaf5/zBui9Ez+1Ko3RhZ80CAqd2ZXJzaW9uAQ==
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/bitstring
+
+==================================================================
