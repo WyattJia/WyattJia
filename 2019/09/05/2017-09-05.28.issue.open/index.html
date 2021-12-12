@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+
+
+
+<title>Useful shell tool kits 包含 bcc sysstat 并且还要结合生产环境实例 | 生活不过是事件循环</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">生活不过是事件循环</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">生活不过是事件循环</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Useful shell tool kits 包含 bcc sysstat 并且还要结合生产环境实例</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">September 5, 2019&nbsp;&nbsp;6:17:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="28-Issue-open-Useful-shell-tips"><a href="#28-Issue-open-Useful-shell-tips" class="headerlink" title="#28 Issue open: Useful shell tips"></a><a target="_blank" rel="noopener" href="https://github.com/WyattJia/WyattJia/issues/28">#28 Issue</a> <code>open</code>: Useful shell tips</h1><p><strong>Labels</strong>: <code>Shell</code></p>
+<h4 id="Wyatt-Jia-opened-issue-at-2017-09-05-06-17"><a href="#Wyatt-Jia-opened-issue-at-2017-09-05-06-17" class="headerlink" title="Wyatt Jia opened issue at 2017-09-05 06:17:"></a><img src="https://avatars.githubusercontent.com/u/8580364?v=4" width="50"><a target="_blank" rel="noopener" href="https://github.com/WyattJia">Wyatt Jia</a> opened issue at <a target="_blank" rel="noopener" href="https://github.com/WyattJia/WyattJia/issues/28">2017-09-05 06:17</a>:</h4><ul>
+<li><code>&lt;C-r&gt;</code>: some_very_long_and_complex_command # 后面作为注释，可以通过ctrl+r搜索到这个命令</li>
+<li><code>iotop</code>: 查看io 的 top</li>
+<li><code>touch file&#123;1,2,3,4,5&#125;.sh</code> 同时操作多个文件</li>
+<li><code>find ./ -type l</code>: -ls 找出所有符号链接文件</li>
+<li><code>sudo tcpdump -i en1 -n -s 0 -w - | grep -a -o -E &quot;Host\: .*|GET \/.*&quot;</code>: 捕获http请求</li>
+<li><code>find . -iname &#39;*.jpg&#39; | sed &#39;s/.*/&lt;img src=&quot;&amp;&quot;&gt;/&#39; &gt; gallery.html</code> 生成html 相册</li>
+<li><code>git log --reverse -p</code>: 优雅的倒叙查看 git 日志</li>
+<li><code>for ((;;)) do pgrep python || echo &quot;python not found&quot;;  sleep 5; done</code>  没找到 Python 进程就睡五秒钟…</li>
+</ul>
+<hr>
+<p>[Export of Github issue for <a target="_blank" rel="noopener" href="https://github.com/WyattJia/WyattJia">WyattJia/WyattJia</a>. Generated on 2021.09.22 at 20:34:27.]</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/07/24/2020-07-24.68.issue.closed/">RocksDB 如何最大化利用空间资源 写实际使用中如何优化 pika 的</a>
+            
+            
+            <a class="next" rel="next" href="/2017/09/04/2017-09-04.27.issue.open/">使用 vi 过程中几个好用的小技巧 -- Help poor children in Uganda!</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

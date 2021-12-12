@@ -13,7 +13,7 @@
 
 
 
-<title>生活不过是事件循环</title>
+<title>使用 vi 过程中几个好用的小技巧 -- Help poor children in Uganda! | 生活不过是事件循环</title>
 
 
 
@@ -117,21 +117,89 @@
 </script>
             <div class="main">
                 <div class="container">
-    <article class="post-wrap page">
-        
-        <h2 class="post-title"></h2>
-        
-        <section class="post-content">
-            <h2 id="关于我"><a href="#关于我" class="headerlink" title="关于我"></a>关于我</h2><p>很普通的一个人啦。网路上大多数时候代号 bitstring，因为 bitstring 翻译过来位串和我的中文名读音很像，也有时候自称王大力，因为笔画少，看起来力气大。偶尔会做一些随机思考。喜欢听各种各样的摇滚，也喜欢听一些古典;喜欢卡尔维诺，王小波，信奉存在主义;永远保持对这个世界的好奇心，天天会有新鲜感。毕竟不快乐的小孩总是急着长大。</p>
-<h2 id="建这个站的目的"><a href="#建这个站的目的" class="headerlink" title="建这个站的目的"></a>建这个站的目的</h2><p>因为最好的学习方式就是输出，只有能够输出了，才表示你理解了，你思考了。正如汉娜·阿伦特所言，做事最重要的是理解，而写作是理解事物的过程中不可或缺的一部分。可能这也是费曼学习法的由来吧。</p>
-<p>Writing is the best way to expose gaps in your understanding, and reading is the best way to fill them. </p>
-<h2 id="一些来源"><a href="#一些来源" class="headerlink" title="一些来源"></a>一些来源</h2><ul>
-<li>域名：eventloop.live 生活可不就是很多重复的事情在循环嘛，就像西西弗斯每天在推的石头一样，eventloop + live ，但是即便是这样，我们还是要爱生活呀~</li>
-<li>favicon ： 亨利·马蒂斯的画: 蜗牛</li>
-<li>avatar ：Wild Nothing 的 Empty Estate 专辑封面,我觉得这个专辑封面的色彩很棒，所以拿来做头像啦。</li>
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">使用 vi 过程中几个好用的小技巧 -- Help poor children in Uganda!</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">September 4, 2017&nbsp;&nbsp;9:47:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <ul>
+<li><code>cw</code>: 替换从光标所在位置后到一个单词结尾的字符</li>
+<li><code>0</code> : 数字零，到行头</li>
+<li><code>g_</code>: 到本行最后一个不是 blank 字符的位置。</li>
+<li><code>e</code> : 到下一个单词的结尾。</li>
+<li><code>.</code> : (小数点) 可以重复上一次的命令</li>
+<li><code>%</code> : 匹配括号移动，包括 <code>(</code>, <code>&#123;</code>, <code>[</code>.</li>
+<li><code>gU</code>: (变大写)</li>
+<li><code>gu</code>: (变小写)</li>
+<li><code>3fa</code>: 在当前行查找第三个出现的 <code>a</code> 。</li>
+<li><code>dt&quot;</code>: 删除所有的内容，直到遇到双引号 <code>&quot;</code> 。</li>
+<li>自动提示，在 Insert 模式下，你可以输入一个词的开头，然后按 <code>&lt;C-n&gt;</code> 或 <code>&lt;C-p&gt;</code> 就行了</li>
+<li>可视化选择模式 <code>&lt;C-v&gt;</code> 的自动给缩进: <code>=</code> ,左右缩进: <code>&lt;</code> 或 <code>&gt;</code> , 把所有的行连接起来变成一行: <code>J</code></li>
+<li>分屏: <code>:split</code> 和 <code>vsplit</code></li>
+<li>批量下划线转驼峰: <code>:%s/_\(\w\)/\u\1/g</code></li>
+<li>批量驼峰转下划线: <ul>
+<li><code>:set smartcase</code></li>
+<li><code>:%s/\([^ .*+-]\)\([A-Z].\)/\1_\2/g</code></li>
+</ul>
+</li>
+<li><code>ctrl + f</code>, 不退出 vim 的情况下打开另外一个文件，其实 <code>:!vim somefile</code> 更方便，支持 tab 。</li>
+<li>当前行内，往前搜索字符 <code>f + &#39;x&#39;</code> ，往后搜索 <code>F + &#39;x&#39;</code> 。</li>
+<li><code>mq</code> 标记某一行文件，按 <code>q</code> 会到标记行。</li>
 </ul>
 
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
         </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/09/05/2017-09-05.28.issue.open/">Useful shell tool kits 包含 bcc sysstat 并且还要结合生产环境实例</a>
+            
+            
+            <a class="next" rel="next" href="/2017/03/27/2017-03-27.4.issue.open/">什么是 Actor Model ，和协程又有什么关系； flink 中的应用 侧面说一下 flink 分布式流式计算的架构（flink 的事务放到另外一篇说</a>
+            
+        </section>
+
+
     </article>
 </div>
 
