@@ -1,6 +1,6 @@
 
 Aloha!
 
-My name is Wyatt Jia *(Chinese pinyin name:Jiǎ Wěichuān)* and the [Issues](https://github.com/WyattJia/WyattJia/issues) here are where I blog.
+My name is Wyatt Jia *(Chinese pinyin name:Jiǎ Wěichuān)* and the site [eventloop.live](https://eventloop.live/) here are where I logged my life.
 
 Glad to see you. 🙂 
