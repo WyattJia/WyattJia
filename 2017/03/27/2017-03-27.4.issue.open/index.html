@@ -13,7 +13,7 @@
 
 
 
-<title>什么是 Actor Model ，和协程又有什么关系； flink 中的应用 侧面说一下 flink 分布式流式计算的架构（flink 的事务放到另外一篇说 | 生活不过是事件循环</title>
+<title>什么是 Actor Model ，和协程又有什么关系 | 生活不过是事件循环</title>
 
 
 
@@ -119,73 +119,11 @@
                 <div class="container">
     
     
-        <div class="post-toc">
-    <div class="tocbot-list">
-    </div>
-    <div class="tocbot-list-menu">
-        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
-        <a onclick="go_top()">Back to top</a>
-        <a onclick="go_bottom()">Go to bottom</a>
-    </div>
-</div>
-
-<script>
-    document.ready(
-        function () {
-            tocbot.init({
-                tocSelector: '.tocbot-list',
-                contentSelector: '.post-content',
-                headingSelector: 'h1, h2, h3, h4, h5',
-                collapseDepth: 1,
-                orderedList: false,
-                scrollSmooth: true,
-            })
-        }
-    )
-
-    function expand_toc() {
-        var b = document.querySelector(".tocbot-toc-expand");
-        tocbot.init({
-            tocSelector: '.tocbot-list',
-            contentSelector: '.post-content',
-            headingSelector: 'h1, h2, h3, h4, h5',
-            collapseDepth: 6,
-            orderedList: false,
-            scrollSmooth: true,
-        });
-        b.setAttribute("onclick", "collapse_toc()");
-        b.innerHTML = "Collapse all"
-    }
-
-    function collapse_toc() {
-        var b = document.querySelector(".tocbot-toc-expand");
-        tocbot.init({
-            tocSelector: '.tocbot-list',
-            contentSelector: '.post-content',
-            headingSelector: 'h1, h2, h3, h4, h5',
-            collapseDepth: 1,
-            orderedList: false,
-            scrollSmooth: true,
-        });
-        b.setAttribute("onclick", "expand_toc()");
-        b.innerHTML = "Expand all"
-    }
-
-    function go_top() {
-        window.scrollTo(0, 0);
-    }
-
-    function go_bottom() {
-        window.scrollTo(0, document.body.scrollHeight);
-    }
-
-</script>
-    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">什么是 Actor Model ，和协程又有什么关系； flink 中的应用 侧面说一下 flink 分布式流式计算的架构（flink 的事务放到另外一篇说</h1>
+            <h1 class="post-title">什么是 Actor Model ，和协程又有什么关系</h1>
             
                 <div class="post-meta">
                     
@@ -194,7 +132,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">March 27, 2017&nbsp;&nbsp;8:50:00</a>
+                        Date: <a href="#">March 27, 2017&nbsp;&nbsp;22:33:12</a>
                         </span>
                     
                     
@@ -203,45 +141,7 @@
         </header>
 
         <div class="post-content">
-            <h2 id="并发与-actor"><a href="#并发与-actor" class="headerlink" title="并发与 actor"></a>并发与 <code>actor</code></h2><blockquote>
-<p>并发与并行的区别</p>
-</blockquote>
-<p>并发与并行这两个概念常常有人会搞错。并发是问题域中的概念——程序需要被设计成能够处理多个同时（或者几乎同时）发生的事件；而并行则是方法域中的概念——通过将问题中的多个部分并行执行，来加速解决问题的能力。</p>
-<ul>
-<li>并发是同一时间应对多件事情的能力。</li>
-<li>并行是同一时间做多件事情的能力。</li>
-</ul>
-<blockquote>
-<p>Thread 和 Greenthread</p>
-</blockquote>
-<p>Thread:</p>
-<ul>
-<li>系统内核态，更轻量的进程</li>
-<li>由系统内核进行调度</li>
-<li>同一进程的多个线程可共享资源</li>
-</ul>
-<p>线程的出现解决了两个问题，一个是 GUI 出现后急切需要并发机制来保证用户界面的响应。第二是互联网应用发展后带来的多用户问题。但是线程的出现也额外带来了更多的复杂度，如静态条件、依赖关系和执行顺序等等，为了解决这些额外的复杂度，我们引入了更多的复杂机制来保证线程安全，如加锁保护数据、信号量同步信息等等方案。除了上面带来的这些复杂度之外，更让人头疼的问题还有线程的成本问题需要我们考虑，如线程的栈空间、调度成本、CPU使用率等等。从上述有关于线程的一些复杂度来说，我们可以得出一个结论：1.<br>线程的成本较高，不能大规模创建。2. 应该从语言或者框架层面解决这些问题。因此，人们相出了线程池的方案来解决问题。然而线程池的出现反而是我们能够更加‘方便’的滥用线程了…<br>除了线程池之外，还有没有更好的办法来利用线程呢？答案是有的。人们相出了其他两种方案。</p>
-<ol>
-<li>异步回调方案。典型的例子是 <code>Node.js</code>，</li>
-<li>GreenThread 方案。协程方案与异步回调方案其实本质上没多大区别，关键在于其独有的回调上下文的保存和执行机制。</li>
-</ol>
-<p>GreenThread 相比 Thread 的优势在于：</p>
-<ul>
-<li>用户空间 首先是在用户空间，避免内核态和用户态的切换导致的成本。</li>
-<li>由语言或者框架层调度</li>
-<li>更小的栈空间允许创建大量实例（百万级别）</li>
-</ul>
-<p>但是 GreenThread 还是有几个问题还没有解决：比如说 CPU 利用率问题， 资源瓶颈问题，‘协程池’里面放置多少协程合适等等。于是人们想出了用 <code>Actor</code> 模型来解决这些问题。</p>
-<blockquote>
-<p>为什么用 Actor 模型？</p>
-</blockquote>
-<p>Actor 其实跟面向对象理念中的 Object 想类似。面向对象中崇尚一切皆对象，Actor 模型中同样也有一切皆 Actor 的理念，两者都是一种抽象（虽然拿编程范式和并发模型来对比不太严谨）。面向对象实现的抽象是 <strong>对象 = 属性 + 行为（方法）</strong>，当调用方调用对象行为的时候，占用的是调用方的 CPU 时间片，是否并发调用也是由调用方决定的，其实这是有悖于现实的。而 Actor 则相反，Actor 之间的消息通信都是通过异步的方式来进行的，actor<br>自身可以做计算，不需要占用调用方的 CPU 时间片，并发策略同样也是由 被调用方自身做决定的。因此 纯 GreenThread 中的 CPU 利用率、资源瓶颈、协程数量等问题也相应的被规避了。</p>
-<p>比较知名的 Actor 的实现由 Erlang/OTP 、 Akka 等等。</p>
-<h2 id="Asyncio"><a href="#Asyncio" class="headerlink" title="Asyncio"></a>Asyncio</h2><blockquote>
-<p>Python Asyncio 的进化</p>
-</blockquote>
-<p>因为有 GIL 的原因，Python 运行的时候无法真正地利用多线程并行，同一时刻下永远只有一个线程在真正地执行。因此不适合执行 CPU 计算密集的程序，线程之间的切换开销一直是 GIL 的瓶颈。直到后来 Python 引入了 GreenThread 的概念。Python 的 <code>yield</code> 生成器就是通过协程来实现的。但是有了生成器还不够，我们还希望能够给协程发送消息的功能，于是加入了 <code>send</code><br>功能。能够给协程发送消息还不够，我们还需要重构生成器，于是加入了 <code>yield from</code> 用于重构生成器。光有这些简单的功能还不够，Python3 中加入了更为成熟的 asyncio 模块，使得协程逐渐独立于生成器之外。</p>
-<h2 id="aioactor-demo"><a href="#aioactor-demo" class="headerlink" title="aioactor demo"></a><a target="_blank" rel="noopener" href="https://github.com/vallley/aioactor">aioactor demo</a></h2><p><a target="_blank" rel="noopener" href="http://sdiehl.github.io/gevent-tutorial/#actors">Gevent 的 actor 实现</a> 值得学习一个。</p>
+            <p><a target="_blank" rel="noopener" href="https://github.com/WyattJia/WyattJia/issues/4">https://github.com/WyattJia/WyattJia/issues/4</a></p>
 
         </div>
 
@@ -269,8 +169,10 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2017/09/04/2017-09-04.27.issue.open/">使用 vi 过程中几个好用的小技巧 -- Help poor children in Uganda!</a>
+                <a class="prev" rel="prev" href="/2017/04/23/2017-04-23.12.issue.open/">Linux 下查看网络状态的常用命令 —— netstat</a>
             
+            
+            <a class="next" rel="next" href="/2017/03/27/2017-03-27.6.issue.open/">统计同一个目录下多个 PDF 文件页数的一段代码</a>
             
         </section>
 
