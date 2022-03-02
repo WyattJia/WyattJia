@@ -203,7 +203,7 @@
         </header>
 
         <div class="post-content">
-            <h1 id="RocksDB-调优指北"><a href="#RocksDB-调优指北" class="headerlink" title="RocksDB 调优指北"></a>RocksDB 调优指北</h1><h2 id="tl-dr"><a href="#tl-dr" class="headerlink" title="tl;dr"></a>tl;dr</h2><p>RocksDB 是一款基于 LevelDB 的嵌入式 KV 数据库，作为目前使用最广的嵌入式数据库之一，它有很多的使用场景，比如说基于 RocksDB 的 Redis protocal porting 数据库 Pika , 著名的流式数据处理框架的有状态存储，分布式强一致性数据库 TiKV 的单机存储引擎等等。复杂的应用场景也带来了更多的调优空间和手段，RocksDB 的配置参数之多，可能是目前市面上开源存储项目中最复杂的之一。因此你可能通过一定的参数调优，可以将性能放到最大，也有可能是负效应。</p>
+            <h1 id="RocksDB-调优指北"><a href="#RocksDB-调优指北" class="headerlink" title="RocksDB 调优指北"></a>RocksDB 调优指北</h1><h2 id="tl-dr"><a href="#tl-dr" class="headerlink" title="tl;dr"></a>tl;dr</h2><p>RocksDB 是一款基于 LevelDB 的嵌入式 KV 数据库，作为目前使用最广的嵌入式数据库之一，它有很多的使用场景，比如说基于 RocksDB 的 Redis protocal porting 数据库 Pika , 著名的流式数据处理框架 Flink 的有状态存储，分布式强一致性数据库 TiKV 的单机存储引擎, OLAP 数据库 StarRocks 的存储引擎等等。复杂的应用场景也带来了更多的调优空间和手段，RocksDB 的配置参数之多，可能是目前市面上开源存储项目中最复杂的之一。因此你可能通过一定的参数调优，可以将性能放到最大，也有可能是负效应。<br>千万级高并发写入</p>
 <h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><p>该文章仅供参考，不能作为生产环境直接依据，视具体情况实际讨论。</p>
 <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>线上有多少 pika 集群，多少 flink 集群<br>集群大概什么配置，集群吞吐量多少，读写分配</p>
 <p>我们线上目前用到 RocksDB 的产品主要有</p>
