@@ -13,7 +13,7 @@
 
 
 
-<title>Cyber Communism | 生活不过是事件循环</title>
+<title>(Draft)Cybercommunity driven by data —— For the sole purpose of meeting the various needs of human beings. | 生活不过是事件循环</title>
 
 
 
@@ -119,11 +119,73 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Cyber Communism</h1>
+            <h1 class="post-title">(Draft)Cybercommunity driven by data —— For the sole purpose of meeting the various needs of human beings.</h1>
             
                 <div class="post-meta">
                     
@@ -141,7 +203,7 @@
         </header>
 
         <div class="post-content">
-            
+            <h2 id="数据驱动的赛博生产平均主义-——-为了满足人类的各种需求为唯一目的"><a href="#数据驱动的赛博生产平均主义-——-为了满足人类的各种需求为唯一目的" class="headerlink" title="数据驱动的赛博生产平均主义 —— 为了满足人类的各种需求为唯一目的"></a>数据驱动的赛博生产平均主义 —— 为了满足人类的各种需求为唯一目的</h2><h3 id="当下互联网的本质是熵减"><a href="#当下互联网的本质是熵减" class="headerlink" title="当下互联网的本质是熵减"></a>当下互联网的本质是熵减</h3><h3 id="数据驱动到实际生产力"><a href="#数据驱动到实际生产力" class="headerlink" title="数据驱动到实际生产力"></a>数据驱动到实际生产力</h3><h3 id="…"><a href="#…" class="headerlink" title="…"></a>…</h3>
         </div>
 
         
