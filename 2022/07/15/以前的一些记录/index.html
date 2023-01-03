@@ -15,7 +15,7 @@
 
 
 
-<title>Archive of previous blogs | 以前的博客归档 | Live like the event loop.</title>
+<title>Previous | Live like the event loop.</title>
 
 
 
@@ -121,73 +121,11 @@
                 <div class="container">
     
     
-        <div class="post-toc">
-    <div class="tocbot-list">
-    </div>
-    <div class="tocbot-list-menu">
-        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
-        <a onclick="go_top()">Back to top</a>
-        <a onclick="go_bottom()">Go to bottom</a>
-    </div>
-</div>
-
-<script>
-    document.ready(
-        function () {
-            tocbot.init({
-                tocSelector: '.tocbot-list',
-                contentSelector: '.post-content',
-                headingSelector: 'h1, h2, h3, h4, h5',
-                collapseDepth: 1,
-                orderedList: false,
-                scrollSmooth: true,
-            })
-        }
-    )
-
-    function expand_toc() {
-        var b = document.querySelector(".tocbot-toc-expand");
-        tocbot.init({
-            tocSelector: '.tocbot-list',
-            contentSelector: '.post-content',
-            headingSelector: 'h1, h2, h3, h4, h5',
-            collapseDepth: 6,
-            orderedList: false,
-            scrollSmooth: true,
-        });
-        b.setAttribute("onclick", "collapse_toc()");
-        b.innerHTML = "Collapse all"
-    }
-
-    function collapse_toc() {
-        var b = document.querySelector(".tocbot-toc-expand");
-        tocbot.init({
-            tocSelector: '.tocbot-list',
-            contentSelector: '.post-content',
-            headingSelector: 'h1, h2, h3, h4, h5',
-            collapseDepth: 1,
-            orderedList: false,
-            scrollSmooth: true,
-        });
-        b.setAttribute("onclick", "expand_toc()");
-        b.innerHTML = "Expand all"
-    }
-
-    function go_top() {
-        window.scrollTo(0, 0);
-    }
-
-    function go_bottom() {
-        window.scrollTo(0, document.body.scrollHeight);
-    }
-
-</script>
-    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Archive of previous blogs | 以前的博客归档</h1>
+            <h1 class="post-title">Previous</h1>
             
                 <div class="post-meta">
                     
@@ -205,7 +143,7 @@
         </header>
 
         <div class="post-content">
-            <h1 id="想要访问之前的内容请点击这里"><a href="#想要访问之前的内容请点击这里" class="headerlink" title="想要访问之前的内容请点击这里"></a><a target="_blank" rel="noopener" href="https://github.com/WyattJia/WyattJia/issues">想要访问之前的内容请点击这里</a></h1><p>之前的博客是记录在 github issue 上，都是偏工程化的一些内容，有点冷冰冰。<br>我想要改变一下风格，想多记录自己思考的内容，所以没有迁移过来。</p>
+            <p><a target="_blank" rel="noopener" href="https://github.com/WyattJia/WyattJia/issues">https://github.com/WyattJia/WyattJia/issues</a></p>
 
         </div>
 
@@ -233,7 +171,7 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2022/08/13/Cyber-Communism/">(Draft)Data-driven agriculture</a>
+                <a class="prev" rel="prev" href="/2022/08/13/Cyber-Farming/">赛博种地——数据驱动农业</a>
             
             
         </section>
