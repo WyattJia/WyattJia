@@ -15,7 +15,7 @@
 
 
 
-<title>Previous | Live like the event loop.</title>
+<title>信息爆炸时代如何阅读 | Live like the event loop.</title>
 
 
 
@@ -121,11 +121,73 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Previous</h1>
+            <h1 class="post-title">信息爆炸时代如何阅读</h1>
             
                 <div class="post-meta">
                     
@@ -134,7 +196,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">July 15, 2022&nbsp;&nbsp;0:37:19</a>
+                        Date: <a href="#">January 3, 2023&nbsp;&nbsp;14:06:29</a>
                         </span>
                     
                     
@@ -143,7 +205,14 @@
         </header>
 
         <div class="post-content">
-            <p>Previous I blogged in Github issues:<br><a target="_blank" rel="noopener" href="https://github.com/WyattJia/WyattJia/issues">https://github.com/WyattJia/WyattJia/issues</a></p>
+            <p>信息爆炸时代，内容铺天盖地而来，信息海洋里掌握快读阅读的能力其实也是建立起自己信息壁垒的一个优势。</p>
+<h2 id="快速阅读"><a href="#快速阅读" class="headerlink" title="快速阅读"></a>快速阅读</h2><p>我不是很擅长快速阅读的技巧，所以我不能对此做出客观的评价。只能讲讲自己相对主观的理解。<br>我认为想要快速阅读最好的办法是事先做大量阅读，做积累。这样，你可能会提前知道当前的书本中大概会有哪些内容，不需要消化学习全新领域的内容拖慢速度。</p>
+<blockquote>
+<p>提升情报处理能力是唯一的方法—提升这个领域的情报处理能力。</p>
+</blockquote>
+<p>阅读这件事没有银弹。<br>学习的过程本身可以拆解成两个过程：理解和记忆。没有掌握基础知识之后去进行快速阅读，并不帮助自己加深理解，这种情况下一目十行只能提升自己的满足感，而不能提升自己的理解度。<br>因此想要提升阅读效率，最好的办法就是夯实基础知识。把相关领域的基础知识读透，提升理解能力之后，再去深入阅读这个领域的书籍和文献的时候，你甚至可以跳着读了。</p>
+<h2 id="去筛选"><a href="#去筛选" class="headerlink" title="去筛选"></a>去筛选</h2><p>还有个快速阅读的方式是懂得舍弃，当断则断。去做筛选而不是改变。不能够每本书，每篇文章都符合自己的预期。</p>
+<h2 id="提高表达"><a href="#提高表达" class="headerlink" title="提高表达"></a>提高表达</h2><p>另外，大量阅读除了能够帮助我们提升对相同领域内的阅读速度之外，还能帮助我们提高语言表达能力和思维能力。<br>因为在阅读过程中，我们除了能够积累大量的词汇，无意中也会掌握正确的对话方式，掌握表达方式和语言之间的关系，在表达的时候就能很自然的运用从书本中学到的词汇、句式和知识点。并且，我们还能再书本中学到食物的辩证逻辑关系，事物发展的因果关系等等，于是，语言表达的时候，思维自然而然地会有一定的逻辑性表述，有条不紊拓展话题，娓娓道来，听众也能感受到清晰明了，提高内容接受度。</p>
 
         </div>
 
@@ -171,8 +240,8 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2022/12/29/%E5%A6%82%E4%BD%95%E5%BD%A2%E6%88%90%E8%87%AA%E5%B7%B1%E7%9A%84%E8%A7%82%E5%BD%B1%E5%93%81%E5%91%B3/">如何形成自己的观影品味</a>
             
+            <a class="next" rel="next" href="/2022/12/29/%E5%A6%82%E4%BD%95%E5%BD%A2%E6%88%90%E8%87%AA%E5%B7%B1%E7%9A%84%E8%A7%82%E5%BD%B1%E5%93%81%E5%91%B3/">如何形成自己的观影品味</a>
             
         </section>
     <script src="https://giscus.app/client.js"
