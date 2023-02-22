@@ -125,6 +125,68 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
@@ -147,8 +209,9 @@
         </header>
 
         <div class="post-content">
-            <p>Taste ，中文是品味，没有好坏之分，也不是能力。相当意义上代表对某一领域的三观，指导自己做进一步了解的方式和方向。</p>
-<p>经常看到影迷之间也有鄙视链，看 IMAX 的瞧不起看 2D 的，看好莱坞的瞧不起看国产商业片的，看小鲜肉的瞧不起看</p>
+            <p>你是否厌倦了各大视频网站乏善可陈的电影。作为一个业余爱好者，我可以分享一点在电影世界探索的经验。</p>
+<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>大多数人都看过，接触过电影。电影作为传播媒体，诞生到现在已经有百余年之久。很多人都把电影当做一种娱乐形式，更多的是在视频网站，电影院体验当下流行的作品。但是我认为电影其实也是一种艺术表达形式，不完全是为了娱乐，除了陪伴爆米花之外，它还有比逃避现实更有意义的价值。</p>
+<p>电影可以帮助我们关注对现实世界的思考，以好奇心和同理心来看待和描绘这个世界，它可以在文化、情感、思考等层面上触动我们。</p>
 
         </div>
 
