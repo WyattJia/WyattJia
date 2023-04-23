@@ -14,7 +14,7 @@ html::-webkit-scrollbar-thumb:hover {
   background-color: #ddd;
 }
 body {
-  font-size: 11pt;
+  font-size: 14pt;
   font-weight: normal;
   line-height: 2em;
   overflow: overlay;
