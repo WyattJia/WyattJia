@@ -15,7 +15,7 @@
 
 
 
-<title>Github Issues 上的记录 | Live like the event loop.</title>
+<title>分布式数据中的Unix哲学 | Live like the event loop.</title>
 
 
 
@@ -125,11 +125,73 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Github Issues 上的记录</h1>
+            <h1 class="post-title">分布式数据中的Unix哲学</h1>
             
                 <div class="post-meta">
                     
@@ -143,8 +205,11 @@
         </header>
 
         <div class="post-content">
-            <p><a target="_blank" rel="noopener" href="https://github.com/WyattJia/WyattJia/issues">https://github.com/WyattJia/WyattJia/issues</a></p>
+            <p>即便是软件工程发展得如此快速，我们现在还是有许多东西要从 1970 年代学习。软件工程领域可能有一个固态思维，就是认为旧的东西总是没有用，因此我们需要不断地学习才能追上时代的步伐。这个说法从某些角度来看，没有问题。尽管计算机变得越来越快，数据规模变得越来越大，需求也变得越来越复杂,但是许多老思想到今天还是受用的。比如说这篇文章要说的 <code>Unix 哲学</code> 。我们可以看看如何在现代大规模的分布式数据处理过程中将 Unix 哲学联系上。比如说，我们可以把 Kafka 和流式数据处理看成 Unix 管道在现代新的实现。我们可以从 Unix 的设计哲学中吸取收纳踩过的坑，可以借此设计出更加结实耐用易维护的应用架构。我们先看看什么是 Unix 哲学的基础。<br>我们先从一些实际的例子来了解 Unix 哲学的基础。</p>
+<h2 id="使用-Unix-工具进行简单的日志处理"><a href="#使用-Unix-工具进行简单的日志处理" class="headerlink" title="使用 Unix 工具进行简单的日志处理"></a>使用 Unix 工具进行简单的日志处理</h2><p>在此之前你可能见识过了 Unix 工具的强大了，但是在开始之前，我们还是需要一起接触一些实际的例子，从而可以继续展开讨论。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
 
+<h2 id="管道和可组合性"><a href="#管道和可组合性" class="headerlink" title="管道和可组合性"></a>管道和可组合性</h2><h2 id="Unix-架构与数据库架构的对比"><a href="#Unix-架构与数据库架构的对比" class="headerlink" title="Unix 架构与数据库架构的对比"></a>Unix 架构与数据库架构的对比</h2><h2 id="可组合性需要统一的接口"><a href="#可组合性需要统一的接口" class="headerlink" title="可组合性需要统一的接口"></a>可组合性需要统一的接口</h2><h2 id="将-Unix-哲学带入-21-世纪"><a href="#将-Unix-哲学带入-21-世纪" class="headerlink" title="将 Unix 哲学带入 21 世纪"></a>将 Unix 哲学带入 21 世纪</h2>
         </div>
 
         
@@ -181,8 +246,8 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2022/12/29/%E5%A6%82%E4%BD%95%E5%BD%A2%E6%88%90%E8%87%AA%E5%B7%B1%E7%9A%84%E8%A7%82%E5%BD%B1%E5%93%81%E5%91%B3/">如何形成自己的观影品味</a>
             
+            <a class="next" rel="next" href="/2023/01/03/%E7%9C%9F%E7%9A%84%E8%83%BD%E5%BF%AB%E9%80%9F%E9%98%85%E8%AF%BB%E5%90%97%EF%BC%9F/">信息爆炸时代如何阅读</a>
             
         </section>
     <script src="https://giscus.app/client.js"
