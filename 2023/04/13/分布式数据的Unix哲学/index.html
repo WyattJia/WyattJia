@@ -15,7 +15,7 @@
 
 
 
-<title>如何速读 | Live like the event loop.</title>
+<title>分布式数据中的 Unix 哲学 | Live like the event loop.</title>
 
 
 
@@ -125,11 +125,73 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">如何速读</h1>
+            <h1 class="post-title">分布式数据中的 Unix 哲学</h1>
             
                 <div class="post-meta">
                     
@@ -143,25 +205,16 @@
         </header>
 
         <div class="post-content">
-            <p>在信息爆炸的时代，我们每天都要面对大量的内容，如何在有限的时间内获取更多的信息呢？快速阅读是一种有效的方法，它不仅可以提高我们的阅读速度，还可以帮助我们建立自己的信息壁垒，筛选出有价值的内容。</p>
-<p>那么，如何才能掌握快速阅读呢？我认为最重要的是要有足够的阅读积累。只有对相关领域有了充分的基础知识，才能在阅读时迅速理解和判断内容的重点和价值。否则，即使一目十行，也只是浮于表面，无法深入掌握。</p>
-<p>当然，除了基础知识之外，还有一些快速阅读的技巧可以帮助我们提高效率。例如：</p>
-<ul>
-<li>阅读前先浏览全文，了解大致结构和主旨。</li>
-<li>阅读时跳过无关紧要或已经熟悉的部分，集中注意力在核心内容上。</li>
-<li>阅读后及时回顾和总结，加强记忆和理解。</li>
-</ul>
-<p>通过这些技巧，我们可以在不牺牲质量的情况下，提升我们的阅读效率和效果。快速阅读不是一种神奇的魔法，而是一种需要不断练习和积累的能力。只要我们持之以恒地阅读，并且运用合适的方法，我们就可以在信息海洋中游刃有余。</p>
-<p>除了上面提到的，还有一个技巧是学会舍弃，当发现某本书或某篇文章不符合自己的预期或需求时，要及时放弃，不要浪费时间和精力。这样可以更有效地筛选出对自己有价值的阅读材料。</p>
-<p>带来的好处，大量阅读不仅能够帮助我们提升对相同领域内的阅读速度，还能够帮助我们提高语言表达能力和思维能力。因为在阅读过程中，我们不仅能够积累丰富的词汇，还能够无意识地掌握正确的语法和对话方式，了解表达方式和语言之间的关系，在表达的时候就能灵活运用从书本中学到的词汇、句式和知识点。而且，我们还能从书本中学到事物的辩证逻辑关系，事物发展的因果关系等等，于是，在语言表达的时候，思维就会自然地具有一定的逻辑性和条理性，能够清晰明了地拓展话题，娓娓道来，让听众更容易接受和理解。</p>
-<p> 但是弊端也很明显：</p>
-<ul>
-<li>快速阅读可以让你在短时间内浏览大量的信息，但是这样可能会让你错过一些深入思考、批判性思维、创造性思维的机会，这些对于提高自己的认知水平和创新能力是很重要的。</li>
-<li>快速阅读可以让你获取很多零碎的知识，但是这样可能会让你忽略知识的系统性、逻辑性、应用性等方面，这些对于解决实际问题和提升专业素养是很必要的。</li>
-<li>快速阅读可以让你为了应付目的而阅读，但是这样可能会让你失去阅读的过程和乐趣，这些对于培养自己的兴趣和品味，以及提升自我和人生是很有帮助的。</li>
-</ul>
-<p>快速阅读并不是一无是处，它在一些场合和材料中是很有用的。但是，在需要深入理解、反思、创新的情况下，还是要采用慢速阅读或深度阅读的方式。快速阅读也需要一定的训练和技巧，比如扩大视距、意群阅读、强制提速等。不要盲目迷信快速阅读，要根据自己的目的和需求，选择合适的阅读方式。</p>
+            <blockquote>
+<p>文章还没写完…</p>
+</blockquote>
+<hr>
+<hr>
+<p>即便是软件工程发展得如此快速，我们现在还是有许多东西要从 1970 年代学习。软件工程领域可能有一个固态思维，就是认为旧的东西总是没有用，因此我们需要不断地学习才能追上时代的步伐。这个说法从某些角度来看，没有问题。尽管计算机变得越来越快，数据规模变得越来越大，需求也变得越来越复杂,但是许多老思想到今天还是受用的。比如说这篇文章要说的 <em>Unix 哲学</em> 。我们可以看看如何在现代大规模的分布式数据处理过程中将 Unix 哲学联系上。比如说，我们可以把 Kafka 和流式数据处理看成 Unix 管道在现代新的实现。我们可以从 Unix 的设计哲学中吸取收纳踩过的坑，可以借此设计出更加结实耐用易维护的应用架构。我们先看看什么是 Unix 哲学的基础。<br>我们先从一些实际的例子来了解 Unix 哲学的基础。</p>
+<h2 id="使用-Unix-工具进行简单的日志处理"><a href="#使用-Unix-工具进行简单的日志处理" class="headerlink" title="使用 Unix 工具进行简单的日志处理"></a>使用 Unix 工具进行简单的日志处理</h2><p>在此之前你可能见识过了 Unix 工具的强大了，但是在开始之前，我们还是需要一起接触一些实际的例子，从而可以继续展开讨论。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
 
+<h2 id="管道和可组合性"><a href="#管道和可组合性" class="headerlink" title="管道和可组合性"></a>管道和可组合性</h2><h2 id="Unix-架构与数据库架构的对比"><a href="#Unix-架构与数据库架构的对比" class="headerlink" title="Unix 架构与数据库架构的对比"></a>Unix 架构与数据库架构的对比</h2><h2 id="可组合性需要统一的接口"><a href="#可组合性需要统一的接口" class="headerlink" title="可组合性需要统一的接口"></a>可组合性需要统一的接口</h2><h2 id="将-Unix-哲学带入-21-世纪"><a href="#将-Unix-哲学带入-21-世纪" class="headerlink" title="将 Unix 哲学带入 21 世纪"></a>将 Unix 哲学带入 21 世纪</h2>
         </div>
 
         
@@ -198,10 +251,8 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2023/04/13/%E5%88%86%E5%B8%83%E5%BC%8F%E6%95%B0%E6%8D%AE%E7%9A%84Unix%E5%93%B2%E5%AD%A6/">分布式数据中的 Unix 哲学</a>
             
-            
-            <a class="next" rel="next" href="/2022/12/29/%E5%A6%82%E4%BD%95%E5%BD%A2%E6%88%90%E8%87%AA%E5%B7%B1%E7%9A%84%E8%A7%82%E5%BD%B1%E5%93%81%E5%91%B3/">如何形成自己的观影品味</a>
+            <a class="next" rel="next" href="/2023/01/03/%E5%A6%82%E4%BD%95%E9%80%9F%E8%AF%BB/">如何速读</a>
             
         </section>
     <script src="https://giscus.app/client.js"
