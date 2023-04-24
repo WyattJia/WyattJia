@@ -143,9 +143,9 @@ template {
   display: none;
 }
 @font-face {
-  font-family: 'lanting';
-  src: url("../fonts/lanting/lanting.eot"); /* IE9 */
-  src: url("../fonts/lanting/lanting.eot?#iefix") format('embedded-opentype'), /* IE6-IE8 */ url("../fonts/lanting/lanting.woff2") format('woff2'), url("../fonts/lanting/lanting.woff") format('woff'), url("../fonts/lanting/LXGWWenKaiGBScreenR.ttf") format('truetype'); /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
+  font-family: 'LXGW WenKai GB Screen R';
+  src: url("../fonts/LXGWWenKai/LXGWWenKaiGBScreenR.eot"); /* IE9 */
+  src: url("../fonts/LXGWWenKai/LXGWWenKaiGBScreenR.eot?#iefix") format('embedded-opentype'), /* IE6-IE8 */ url("../fonts/LXGWWenKai/LXGWWenKaiGBScreenR.woff2") format('woff2'), url("../fonts/LXGWWenKai/LXGWWenKaiGBScreenR.woff") format('woff'), url("../fonts/LXGWWenKai/LXGWWenKaiGBScreenR.ttf") format('truetype'); /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
   font-weight: 300;
   font-display: swap;
 }
