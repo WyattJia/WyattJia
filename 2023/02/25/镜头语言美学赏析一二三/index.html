@@ -15,7 +15,7 @@
 
 
 
-<title>分布式数据中的 Unix 哲学 | Live like the event loop.</title>
+<title>镜头语言美学赏析一二三[Draft] | Live like the event loop.</title>
 
 
 
@@ -191,7 +191,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">分布式数据中的 Unix 哲学</h1>
+            <h1 class="post-title">镜头语言美学赏析一二三[Draft]</h1>
             
                 <div class="post-meta">
                     
@@ -205,16 +205,23 @@
         </header>
 
         <div class="post-content">
-            <blockquote>
-<p>文章还没写完…</p>
-</blockquote>
-<hr>
-<hr>
-<p>即便是软件工程发展得如此快速，我们现在还是有许多东西要从 1970 年代学习。软件工程领域可能有一个固态思维，就是认为旧的东西总是没有用，因此我们需要不断地学习才能追上时代的步伐。这个说法从某些角度来看，没有问题。尽管计算机变得越来越快，数据规模变得越来越大，需求也变得越来越复杂,但是许多老思想到今天还是受用的。比如说这篇文章要说的 <em>Unix 哲学</em> 。我们可以看看如何在现代大规模的分布式数据处理过程中将 Unix 哲学联系上。比如说，我们可以把 Kafka 和流式数据处理看成 Unix 管道在现代新的实现。我们可以从 Unix 的设计哲学中吸取收纳踩过的坑，可以借此设计出更加结实耐用易维护的应用架构。我们先看看什么是 Unix 哲学的基础。<br>我们先从一些实际的例子来了解 Unix 哲学的基础。</p>
-<h2 id="使用-Unix-工具进行简单的日志处理"><a href="#使用-Unix-工具进行简单的日志处理" class="headerlink" title="使用 Unix 工具进行简单的日志处理"></a>使用 Unix 工具进行简单的日志处理</h2><p>在此之前你可能见识过了 Unix 工具的强大了，但是在开始之前，我们还是需要一起接触一些实际的例子，从而可以继续展开讨论。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="管道和可组合性"><a href="#管道和可组合性" class="headerlink" title="管道和可组合性"></a>管道和可组合性</h2><h2 id="Unix-架构与数据库架构的对比"><a href="#Unix-架构与数据库架构的对比" class="headerlink" title="Unix 架构与数据库架构的对比"></a>Unix 架构与数据库架构的对比</h2><h2 id="可组合性需要统一的接口"><a href="#可组合性需要统一的接口" class="headerlink" title="可组合性需要统一的接口"></a>可组合性需要统一的接口</h2><h2 id="将-Unix-哲学带入-21-世纪"><a href="#将-Unix-哲学带入-21-世纪" class="headerlink" title="将 Unix 哲学带入 21 世纪"></a>将 Unix 哲学带入 21 世纪</h2>
+            <h2 id="镜头语言"><a href="#镜头语言" class="headerlink" title="镜头语言"></a>镜头语言</h2><p><strong>三要素：镜头剪辑、画面布局、环境营造。</strong></p>
+<p>电影镜头语言是一种艺术表现方式，它利用镜头的选择、构图、运动、切换、拼接等技巧，以及声音、音乐、对白等元素，来传达电影的内容、主题、风格和情感。电影镜头语言是电影创作者的主观表达，也是观众理解和欣赏电影的重要途径。电影镜头语言有很多种类和方法，可以产生不同的效果，也需要多看多分析多实践来掌握和运用。</p>
+<h2 id="杨德昌、侯孝贤与小津安二郎"><a href="#杨德昌、侯孝贤与小津安二郎" class="headerlink" title="杨德昌、侯孝贤与小津安二郎"></a>杨德昌、侯孝贤与小津安二郎</h2><p>杨德昌和侯孝贤得叙事风格都受到了小津安二郎的影响，但是各自的镜头语言发展出了各自的风格，我们先从每个导演的风格开始说起。除了杨和候两人之外，台湾电影新浪潮时代还出现过许多优秀的导演，比如说还有王童、万仁等人，他们都深刻地记录了台湾时代变迁中风貌和生活。</p>
+<h3 id="杨德昌"><a href="#杨德昌" class="headerlink" title="杨德昌"></a>杨德昌</h3><p>杨德昌是我最喜欢的导演之一，他说过一句很出名的话：<em>电影发明之后，人类的生命，比起以前延长了三倍！</em><br>杨德昌的作品展现出了惊人的叙事能力，将普通生活里的细节洞察到极为深刻，只需要几个镜头就能表达深意，看似平淡无奇，实际非常细腻。他的镜头语言当然值得分析。他的镜头语言主要有这几个特色：</p>
+<ul>
+<li><p>长镜头语言：杨德昌反对蒙太奇剪辑，认为长镜头能更真实地表现电影的整体性和连续性，也能更好地展现人物的动作和情绪，以及空间感和时间感。</p>
+</li>
+<li><p>灯光设计：杨德昌的电影灯光接近自然光，白天用自然光，夜晚用有限光源，创造出真实和富有氛围的效果，有时也和剧情呼应。</p>
+</li>
+<li><p>构图和镜头运用：杨德昌的电影构图注重线条和层次，利用建筑物、窗户、门框等元素对画面进行分割和分离，形成一种冷漠和隔离的效果。他的电影也不断变化焦点和景深，跟随人物的视线和心理。</p>
+</li>
+<li><p>色彩运用：色彩对比，如《一一》中婚礼和葬礼的对比，前者是暖色调的红色系，后者是冷色调的黑白系，分别表现了喜悦和悲哀的情绪。</p>
+</li>
+<li><p>录音处理：杨德昌的电影录音清晰地展现了人物的位置和运动方向，以及声音和画面之间的层次和分离。他的电影也经常利用声音带出画面的切换或者暗示某种意义。</p>
+</li>
+</ul>
+<h2 id="韦斯安德森"><a href="#韦斯安德森" class="headerlink" title="韦斯安德森"></a>韦斯安德森</h2><h2 id="希区柯克"><a href="#希区柯克" class="headerlink" title="希区柯克"></a>希区柯克</h2><h2 id="是枝裕和"><a href="#是枝裕和" class="headerlink" title="是枝裕和"></a>是枝裕和</h2><h2 id="昆汀和香港电影"><a href="#昆汀和香港电影" class="headerlink" title="昆汀和香港电影"></a>昆汀和香港电影</h2><h2 id="姜文、黑泽明"><a href="#姜文、黑泽明" class="headerlink" title="姜文、黑泽明"></a>姜文、黑泽明</h2>
         </div>
 
         
@@ -241,6 +248,10 @@
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/%E5%AE%A1%E7%BE%8E/"># 审美</a>
+                    
+                        
                 </span>
             </div>
             <div>
@@ -251,8 +262,10 @@
         </section>
         <section class="post-nav">
             
+                <a class="prev" rel="prev" href="/2023/04/13/%E5%88%86%E5%B8%83%E5%BC%8F%E6%95%B0%E6%8D%AE%E7%9A%84Unix%E5%93%B2%E5%AD%A6/">分布式数据中的 Unix 哲学</a>
             
-            <a class="next" rel="next" href="/2023/02/25/%E9%95%9C%E5%A4%B4%E8%AF%AD%E8%A8%80%E7%BE%8E%E5%AD%A6%E8%B5%8F%E6%9E%90%E4%B8%80%E4%BA%8C%E4%B8%89/">镜头语言美学赏析一二三[Draft]</a>
+            
+            <a class="next" rel="next" href="/2023/01/03/%E5%A6%82%E4%BD%95%E9%80%9F%E8%AF%BB/">如何速读</a>
             
         </section>
     <script src="https://giscus.app/client.js"
