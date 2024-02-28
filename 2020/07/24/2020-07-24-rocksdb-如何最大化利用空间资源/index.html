@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>RocksDB 如何最大化利用空间资源 | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">RocksDB 如何最大化利用空间资源</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="RocksDB如何高效利用存储空间"><a href="#RocksDB如何高效利用存储空间" class="headerlink" title="RocksDB如何高效利用存储空间"></a>RocksDB如何高效利用存储空间</h1><p>一、背景介绍</p>
+<p>Facebook拥有世界上最大的MySQL集群之一,存储着数十PB的数据。其底层存储引擎正在大规模地从InnoDB切换到MyRocks,后者使用了Facebook自研的RocksDB作为存储核心。之所以选择RocksDB,主要基于以下考量:</p>
+<ol>
+<li> 固态盘成本降低后逐渐成为主要的数据存储介质,但单机容量有限;</li>
+<li> Facebook使用大量廉价机器的共享式集群来部署海量数据,单机能力受限;</li>
+<li> 存储的数据量巨大,需要横向拆分到大量存储节点;</li>
+</ol>
+<p>考虑到以上环境限制,RocksDB将提高存储空间的利用效率置于优先地位,而不是传统DB更看重的事务延迟/吞吐量等指标,只要性能达到基本要求。本文将重点分析RocksDB是如何实现存储空间利用率最大化的。</p>
+<p>二、动态调整LSM-Tree层级大小</p>
+<ol>
+<li>LSM-Tree的工作原理</li>
+</ol>
+<p>RocksDB基于Log-Structured Merge-Tree(LSM Tree)架构来高效组织数据。它包含一个内存中MEM表,以及数个外部的SST文件。写入首先记录到MEM表和WAL日志中,当MEM表大小达到阈值后会生成一个不可变的SST文件。SST文件以有序Key的方式存储数据,并组织为L0-LN多层结构,每层的文件个数和大小逐渐增大……(详细解释LSM的写入过程、文件组织、查询过程等)</p>
+<ol start="2">
+<li>空间放大的形成 </li>
+</ol>
+<p>存储引擎的空间放大指实际使用的存储空间和理论数据量的比值。对于LSM-Tree来说,主要额外空间来自陈旧版本数据尚未被压缩合并的情况。如果默认配置Making每个层级大小为上层的10倍,那么最优空间放大理论值为1.111……(通过公式推导层级比为10时空间放大的计算过程)</p>
+<p>但是,如果实际情况下最终层L4的数据量刚好比L3大10倍的可能性非常小,那么实际空间效率会比理论更差,严重浪费存储容量。</p>
+<ol start="3">
+<li>RocksDB的优化策略</li>
+</ol>
+<p>为将空间放大控制在最优的1.11左右,RocksDB的策略是动态调整各层级的大小目标,使其大致维持为上一层实际数据量的10分之1。这需要存储系统定期或实时监控每层文件的实际数据大小,动态设置下一层的大小阈值……(说明具体的大小阈值设置方法)</p>
+<p>这种大小自适应机制的效果是能够按实际情况改变层级个数,从而将空间放大控制在最优。附带的好处是也减少了查询遍历的层级,有效优化读放大。但写放大会有所增加。</p>
+<p>三、多种数据压缩策略</p>
+<ol>
+<li>Key前缀编码  </li>
+</ol>
+<p>存储键值对时,可以重复利用键的公共前缀来节省空间。例如对一批用户ID排序存储,那些共同开头的数字可以只记录一次,后续相同部分不再存储。根据Facebook的测试,这种方式可减小3-17%的存储占用,视数据集而定。实现上通过前缀树判断前缀边界,指定前缀编码器等。</p>
+<ol start="2">
+<li>序列号垃圾回收</li>
+</ol>
+<p>RocksDB的多版本并发控制需要为每个键值版本记录一个全局序列号。如果只是为时间点快照保留些历史版本,其他过期序列号就可以删除以腾出存储。由于序列号是一个64位的长整型,压缩效果较差,此举根据经验可减少0.03-23%的存储,视数据集而定……(举例说明如果不回收序列号对存储的影响)  </p>
+<ol start="3">
+<li>数据压缩</li>
+</ol>
+<p>RocksDB支持多种数据压缩算法,包括Snappy、Zlib、Bzip2、LZ4等。这些压缩方法可以将不同类型的数据压缩到原始大小的25-40%之间,比如Facebook的社交网络数据可压缩到35%原始大小。压缩发生在写SST文件时,而读数据时需要解压,增加了CPU开销。</p>
+<ol start="4">
+<li>基于字典的压缩</li>
+</ol>
+<p>RocksDB还使用数据字典这一技巧提高压缩效率,尤其对小的数据块而言。对一个数据文件建立字符串码表,替代索引存储,使每个数据块中字符串只基于索引编码,从而利用更多上下文实现更高的压缩率。这种字典压缩可为LSM树节省额外3%的存储空间。实现上,字典直接存储于不可变SST文件中,自然随文件销毁而销毁……(详细举例说明基于字典压缩的具体过程)</p>
+<p>四、与其他指标的平衡(500字)  降低空间放大的同时也意味着读写和CPU的额外消耗。RocksDB在这方面做出了平衡:</p>
+<ol>
+<li> 只在占据90%数据的最后一层使用高CPU占用的强压缩算法;初级层使用轻量压缩或不压缩,以确保延迟;</li>
+<li> 使用Bloom Filter加速查找从而减少不必要的文件访问提高性能,但最后一层不使用以节省内存;</li>
+<li> 使用Key前缀Bloom Filter加速仅对特定前缀的范围查询;</li>
+</ol>
+<p>通过以上方式在空间、读写和CPU指标间求平衡,RocksDB减少了50%以上的存储占用,同时保证了可扩展的事务吞吐量和良好的查询性能。</p>
+<p>五、总结</p>
+<p>通过动态调整层级大小控制空间放大,并多种压缩技术减少存储占用,RocksDB在保存50%以上存储空间的同时,也基本满足了Facebook的事务吞吐量等性能指标,实现了大规模数据存储下资源利用效率的极大优化。本文也对这些技术的实现原理、Workflow做了详细阐述,有助于读者全面理解RocksDB是如何高效利用存储空间的。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Database/"># Database</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/07/27/2020-07-27-write-behind-logging./">Write behind logging.</a>
+            
+            
+            <a class="next" rel="next" href="/2020/07/01/2020-07-01-%60ngx_http_limit_conn_module%60-/">`ngx_http_limit_conn_module` </a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

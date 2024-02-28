@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>Getting Started with Istio and run Istio on your laptop. | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Getting Started with Istio and run Istio on your laptop.</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="Istio-是啥"><a href="#Istio-是啥" class="headerlink" title="Istio 是啥"></a>Istio 是啥</h3><p>Istio 是 Google、IBM、Lyft 联合推出的 Service mesh 框架。是 Service mesh 概念的具体实现。</p>
+<h3 id="Service-Mesh-又是啥"><a href="#Service-Mesh-又是啥" class="headerlink" title="Service Mesh 又是啥?"></a>Service Mesh 又是啥?</h3><p><img src="https://raw.githubusercontent.com/wellls/blog/draft/assets/%E6%9E%B6%E6%9E%84%E6%BC%94%E8%BF%9B.png" alt="架构演进"></p>
+<p>Service mesh是为了解决微服务体系下服务间通信复杂问题而产生，帮助治理微服务的的产物。其可以提供安全、快速、可靠的服务间通讯，相当无微服务间的 TCP/IP 传输层，负责服务间的调用，限流，熔断和监控等。 </p>
+<h3 id="为什么选择-Istio"><a href="#为什么选择-Istio" class="headerlink" title="为什么选择 Istio"></a>为什么选择 Istio</h3><p>Istio 可以提供一种简单的方式来为已经部署的微服务架构建立服务间的网络通信。Istio 是非侵入式的，因此不需要对现有服务的代码做任何改动，只需要在部署环境中增加 Istio 的 sidecar 代理即可,通过这层 sidecar 。Istio 就接管了服务间的所有网络，因此就可以使用 Istio 控制平面来来配置和管理 Sidecar，管理服务间所有的网络通信，包括以下所列的功能:</p>
+<ul>
+<li>HTTP, gRPC, WebSocket 和 TCP 流量的自动负载均衡</li>
+<li>通过 Istio 提供的路由规则，重试机制，故障转移和注入等功能，对流量行为进行更加细粒度的控制</li>
+<li>可插拔的策略层和配置 API，支持访问控制、速率控制，配额控制等</li>
+<li>对集群出入口的流量的自动度量指标、记录和跟踪日志</li>
+<li>自带强大的基于身份的验证和授权，在集群中实现安全的服务间通信</li>
+<li>可扩展性高</li>
+</ul>
+<h3 id="核心功能"><a href="#核心功能" class="headerlink" title="核心功能"></a>核心功能</h3><ul>
+<li>流量管理<br>简化了熔断器，超时，重试的配置，并且可以轻松配置 A/B 测试、金丝雀部署，基于百分比的流量分割分阶段部署</li>
+<li>安全<br>底层提供安全通信协议，默认情况下是安全地。默认情况下是安全的，几乎不需要应用程序层的更改。</li>
+<li>可观察性<br>Istio 的 Mixer 组件负责策略控制和遥测手机。</li>
+<li>平台支持<br>Istio 是基于现有集群平台的，目前 Istio 1.0 版本部署的环境有 :<ul>
+<li>Kubernetes 上部署的服务(这篇文章中会讲到的一种方式)</li>
+<li>Consul + Nomad 上部署的服务</li>
+<li>虚拟机上部署的服务(待验证，官方文档上有提到)</li>
+</ul>
+</li>
+<li>集成定制</li>
+<li>架构<ul>
+<li>数据平台<br>由一组以 sidecar 方式部署的 Envoy 代理组成，这些代理可以调控微服务之间和 Mixer 之间的所有的网络通信。</li>
+<li>控制平台<br>负责管理和配置代理来路由分发流量，并且用 Mixer 来实施策略和收集数据。</li>
+<li>架构图：<br><img src="https://raw.githubusercontent.com/wellls/blog/draft/assets/istio_arch.png" alt="istio_arch"></li>
+</ul>
+</li>
+</ul>
+<h3 id="与-Envoy-的集成"><a href="#与-Envoy-的集成" class="headerlink" title="与 Envoy 的集成"></a>与 Envoy 的集成</h3><p>Istio 使用了 Envoy 的扩展版本作为高性能代理，用于调控 Service mesh 中所有的出站流量和入站流量。Istio 沿用了 Envoy 中许多内置功能，如:</p>
+<ul>
+<li>动态服务发现</li>
+<li>负载均衡</li>
+<li>TLS 终止</li>
+<li>HTTP/2 &amp; gRPC 代理</li>
+<li>熔断器</li>
+<li>健康检查、基于百分比流量拆分的灰度发布</li>
+<li>故障注入</li>
+<li>度量指标</li>
+</ul>
+<p>Envoy 被部署为 sidecar ，和对应服务放置在同一个 Kubernetes Pod 中，而且 sidecar 的代理模型还可以支持 Istio 功能的热更新。</p>
+<h3 id="Mixer"><a href="#Mixer" class="headerlink" title="Mixer"></a>Mixer</h3><p>负责在 service mesh上执行访问控制和使用策略，并从 Envoy 代理和其他服务收集遥测数据。</p>
+<h3 id="Pilot"><a href="#Pilot" class="headerlink" title="Pilot"></a>Pilot</h3><p>为 Envoy sidecar 提供服务发现功能，为智能路由和弹性提供流量管理功能，可以将路由规则转换成 Envoy 配置，并分发给 sidecar 。</p>
+<h3 id="Citadel"><a href="#Citadel" class="headerlink" title="Citadel"></a>Citadel</h3><p>提供服务间和最终用户身份验证。</p>
+<hr>
+<hr>
+<h2 id="Quickly-start-and-requirements"><a href="#Quickly-start-and-requirements" class="headerlink" title="Quickly start and requirements"></a>Quickly start and requirements</h2><ul>
+<li><p>minikube<br>可参考官方文档 <a target="_blank" rel="noopener" href="https://kubernetes.io/docs/tasks/tools/install-minikube/">install-minikube</a>。因为我是在 macOS 上运行的 minikube,所以我选择了 HyperKit 作为我的 Hypervisor 。</p>
+</li>
+<li><p>RBAC </p>
+<p>k8s 1.8 版本之后，启动 Kubernetes apiserver 的时候需要带参数 <code>--authorization-mode=RBAC</code> 。</p>
+</li>
+<li><p>启动 minikube:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube start --extra-config=controller-manager.cluster-signing-cert-file=&quot;/var/lib/localkube/certs/ca.crt&quot; --extra-config=controller-manager.cluster-signing-key-file=&quot;/var/lib/localkube/certs/ca.key&quot; --extra-config=apiserver.admission-control=&quot;NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota&quot; --kubernetes-version=v1.10.0 --bootstrapper=localkube --alsologtostderr --vm-driver=hyperkit</span><br></pre></td></tr></table></figure></li>
+<li><p>安装 Kuberctl</p>
+<p>使用 homebrew 安装：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install kubernetes-cli</span><br></pre></td></tr></table></figure>
+
+<p>其他方式参考<a target="_blank" rel="noopener" href="https://kubernetes.io/docs/tasks/tools/install-kubectl/">官方文档</a></p>
+</li>
+<li><p>下载安装 istio </p>
+<ol>
+<li>直接下载官方 istio 仓库到本地</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -L https://git.io/getLatestIstio | sh -</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>解压安装文件，切换到文件所在目录。安装文件目录下包含：</li>
+</ol>
+<ul>
+<li>install/ 目录下是 Kubernetes 使用的 .yaml 安装文件</li>
+<li>samples/ 目录下是示例程序</li>
+<li>istioctl 客户端二进制文件在 bin 目录下。istioctl 文件用户手动注入 Envoy sidecar 代理、创建路由和策略等</li>
+<li>istio.VERSION 配置文件</li>
+</ul>
+<ol start="3">
+<li>添加 <code>istioctl</code> 到 PATH 中：<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> istio-1.0.0</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">export</span> PATH=<span class="variable">$PWD</span>/bin:<span class="variable">$PATH</span></span></span><br></pre></td></tr></table></figure></li>
+</ol>
+</li>
+<li><p>安装 Istio 核心部分</p>
+<p>官方支持五种安装方式，线上生产环境中官方推荐 Helm Chart 的方式来安装 Istio 。<br>但我们选择用默认方式来安装：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl apply -f install/kubernetes/istio-demo-auth.yaml  <span class="comment"># 默认会在 sidecar 之间进行双向 TLS 身份验证。</span></span></span><br></pre></td></tr></table></figure>
+
+<p>其他几种种安装方式分别是：</p>
+<ul>
+<li>默认不启用 TLS 认证 <code>$ kubectl apply -f install/kubernetes/istio.yaml</code><br>能够与其他非 Istio kubernetes 服务通信。</li>
+<li>使用 Helm 渲染出 Kubernetes 配置清单然后使用 kubectl 部署</li>
+<li>使用 Helm 和 Tiller 管理 Istio 部署</li>
+</ul>
+</li>
+<li><p>验证安装</p>
+<ol>
+<li><code>kubectl get svc -n istio-system</code></li>
+</ol>
+<p>  确认下列 Kubernetes 服务已经部署：istio-pilot、 istio-ingressgateway、istio-policy、istio-telemetry、prometheus、sidecar-injector（可选）。<br>  <em>如果是 minikube 环境中运行的话，需要用 NodePort 来访问。</em></p>
+<ol start="2">
+<li><code>kubectl get pods -n istio-system</code><br>确保所有相应的Kubernetes pod都已被部署且所有的容器都已启动并正在运行：istio-pilot-*、istio-ingressgateway-*、istio-egressgateway-*、istio-policy-*、istio-telemetry-*、istio-citadel-*、prometheus-*、istio-sidecar-injector-*（可选）</li>
+</ol>
+</li>
+</ul>
+<ul>
+<li><p>尝试部署应用</p>
+<p>如果启用了 <code>Istio-Initializer</code>， 则直接使用 <code>kubectl create</code> 直接部署，它会自动向 Pod 中注入 Envoy sidecar。</p>
+<p><em>否则的话需要手动注入 Envoy <code>$ kubectl create -f &lt;(istioctl kube-inject -f &lt;your-app-spec&gt;.yaml)</code></em></p>
+</li>
+</ul>
+<h3 id="Bookinfo-demo-by-Istio-example"><a href="#Bookinfo-demo-by-Istio-example" class="headerlink" title="Bookinfo demo by Istio example"></a>Bookinfo demo by Istio example</h3><h3 id="Bookinfo-简介"><a href="#Bookinfo-简介" class="headerlink" title="Bookinfo 简介"></a>Bookinfo 简介</h3><p>  Bookinfo 是由微服务组成的一个异构应用，分别为:</p>
+<ul>
+<li>productpage: productpage 微服务会调用 details 和 reviews 两个微服务，用来生成页面。</li>
+<li>details ：这个微服务包含了书籍的信息。</li>
+<li>reviews ：这个微服务包含了书籍相关的评论。它还会调用 ratings 微服务。</li>
+<li>ratings ：ratings 微服务中包含了由书籍评价组成的评级信息。</li>
+</ul>
+<p>Reviews 应用分三个版本:</p>
+<ul>
+<li>v1 版本不会调用 ratings 服务。</li>
+<li>v2 版本会调用 ratings 服务，并使用 1 到 5 个黑色星形图标来显示评分信息。</li>
+<li>v3 版本会调用 ratings 服务，并使用 1 到 5 个红色星形图标来显示评分信息。</li>
+</ul>
+<p>未引入 Istio 之前的 Bookinfo 架构:</p>
+<p><img src="https://raw.githubusercontent.com/wellls/blog/draft/assets/bookinfo_without_istio.png"></p>
+<p>引入 Istio 之后的 Bookinfo 架构:</p>
+<p><img src="https://raw.githubusercontent.com/wellls/blog/draft/assets/bookinfo_with_istio.png"></p>
+<h3 id="在-K8S-中运行"><a href="#在-K8S-中运行" class="headerlink" title="在 K8S 中运行"></a>在 K8S 中运行</h3><ul>
+<li><p>进入 Istio</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd /path/to/istio-1.0.0</span><br></pre></td></tr></table></figure></li>
+<li><p>Sidecar 注入</p>
+<p>自动注入 sidecar:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>手动注入 sidecar:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl apply -f &lt;(istioctl kube-inject -f samples/bookinfo/platform/kube/bookinfo.yaml)</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>定义 Ingress Gateway</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml</span></span><br></pre></td></tr></table></figure></li>
+<li><p>确认启动</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl get services</span></span><br><span class="line">NAME                       CLUSTER-IP   EXTERNAL-IP   PORT(S)              AGE</span><br><span class="line">details                    10.0.0.31    &lt;none&gt;        9080/TCP             6m</span><br><span class="line">kubernetes                 10.0.0.1     &lt;none&gt;        443/TCP              7d</span><br><span class="line">productpage                10.0.0.120   &lt;none&gt;        9080/TCP             6m</span><br><span class="line">ratings                    10.0.0.15    &lt;none&gt;        9080/TCP             6m</span><br><span class="line">reviews                    10.0.0.170   &lt;none&gt;        9080/TCP </span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl get pods</span></span><br><span class="line">NAME                                        READY     STATUS    RESTARTS   AGE</span><br><span class="line">details-v1-1520924117-48z17                 2/2       Running   0          6m</span><br><span class="line">productpage-v1-560495357-jk1lz              2/2       Running   0          6m</span><br><span class="line">ratings-v1-734492171-rnr5l                  2/2       Running   0          6m</span><br><span class="line">reviews-v1-874083890-f0qf0                  2/2       Running   0          6m</span><br><span class="line">reviews-v2-1343845940-b34q5                 2/2       Running   0          6m</span><br><span class="line">reviews-v3-1813607990-8ch52  </span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">* 确定运行情况</span><br><span class="line"> </span><br><span class="line"> ```shell</span><br><span class="line"> $ curl -o /dev/null -s -w &quot;%&#123;http_code&#125;\n&quot; http://127.0.0.1/productpage</span><br></pre></td></tr></table></figure>
+<p>返回 <code>200</code> 即可。</p>
+</li>
+<li><p>清除</p>
+<ol>
+<li><p>删除路由规则，并终结应用的 Pod</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> samples/bookinfo/platform/kube/cleanup.sh</span></span><br></pre></td></tr></table></figure></li>
+<li><p>确认应用已经关停</p>
+</li>
+</ol>
+  <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> istioctl get gateway           <span class="comment">#-- 此处应该已经没有 Gateway</span></span></span><br><span class="line"><span class="meta">$</span><span class="bash"> istioctl get virtualservices   <span class="comment">#-- 此处应该已经没有 VirtualService</span></span></span><br><span class="line"><span class="meta">$</span><span class="bash"> kubectl get pods               <span class="comment">#-- Bookinfo 的所有 Pod 应该都已经被删除</span></span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<hr>
+<h3 id="To-be-continued…"><a href="#To-be-continued…" class="headerlink" title="To be continued…"></a>To be continued…</h3>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Infrastructure/"># Infrastructure</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/09/10/2018-09-10-use-gcr.io-and-minikube-in-china./">Use gcr.io and minikube in China.</a>
+            
+            
+            <a class="next" rel="next" href="/2018/08/25/2018-08-25-redox-os-%E2%80%94%E2%80%94-%E4%B8%80%E5%88%87%E7%9A%86-url-%E7%9A%84%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">Redox OS —— 一切皆 URL 的操作系统</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

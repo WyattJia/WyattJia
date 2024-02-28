@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>哈希一致性 Python 实现 | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">哈希一致性 Python 实现</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># /usr/bin/env python3</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Consistent Hashing demo in Python.</span></span><br><span class="line"><span class="string">~ 哈希一致性 Python 语言实现</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">   ~ 关键抽象</span></span><br><span class="line"><span class="string">     * Entry 放入 cache 服务器中的对象</span></span><br><span class="line"><span class="string">     * Server 真正放入缓存对象的 cache 服务器</span></span><br><span class="line"><span class="string">     * Cluster 服务器集群。（假设会维护一组服务器，这相当于是一组服务器的代理，</span></span><br><span class="line"><span class="string">       接受  put, get 请求，通过一定算法（普通取余或者哈希一致性将请求转发给特定的 server ）</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> hashlib <span class="keyword">import</span> md5</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">Dict</span>, <span class="type">List</span></span><br><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> OrderedDict</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">treemap</span>(<span class="params">dictionary: <span class="type">Dict</span></span>) -&gt; OrderedDict:</span></span><br><span class="line">    <span class="keyword">return</span> OrderedDict(<span class="built_in">sorted</span>(dictionary.items()))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">tail_map</span>(<span class="params">dictionary: <span class="type">Dict</span>, from_key</span>) -&gt; <span class="type">Dict</span>:</span></span><br><span class="line">    tailed_map = &#123;key: value <span class="keyword">for</span> key, value <span class="keyword">in</span> dictionary.items() <span class="keyword">if</span> key &gt;= from_key&#125;</span><br><span class="line">    <span class="keyword">return</span> OrderedDict(tailed_map)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">string_hashcode</span>(<span class="params">key: <span class="built_in">str</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span></span>) -&gt; <span class="built_in">int</span>:</span></span><br><span class="line">    m = md5(key.encode(encoding)).hexdigest()</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">int</span>(m, <span class="number">16</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">first_key</span>(<span class="params">dictionary: OrderedDict</span>):</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        first_item = <span class="built_in">next</span>(<span class="built_in">iter</span>(dictionary.items()))</span><br><span class="line">        <span class="keyword">return</span> first_item[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">except</span> StopIteration <span class="keyword">as</span> error:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Entry</span>(<span class="params"><span class="built_in">str</span></span>):</span></span><br><span class="line">    _key = <span class="string">&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, key</span>):</span></span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        self._key = key</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span>(<span class="params">self</span>):</span></span><br><span class="line">        <span class="keyword">return</span> self._key</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Server</span>:</span></span><br><span class="line">    _name = <span class="string">&#x27;&#x27;</span></span><br><span class="line">    _entries = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, name</span>):</span></span><br><span class="line">        self._name = name</span><br><span class="line">        self._entries: <span class="type">Dict</span>[Entry, Entry] = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">put</span>(<span class="params">self, e: Entry</span>) -&gt; <span class="literal">None</span>:</span></span><br><span class="line">        self._entries[e] = e</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span>(<span class="params">self, e: Entry</span>) -&gt; <span class="built_in">dict</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self._entries.get(e)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Cluster</span>:</span></span><br><span class="line">    _SERVER_SIZE_MAX = <span class="number">1024</span></span><br><span class="line"></span><br><span class="line">    _servers = OrderedDict()</span><br><span class="line">    _size = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">put</span>(<span class="params">self, e: Entry</span>) -&gt; <span class="literal">None</span>:</span></span><br><span class="line">        self.route_server(string_hashcode(e)).put(e)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span>(<span class="params">self, e: Entry</span>) -&gt; Entry:</span></span><br><span class="line">        server = self.route_server((string_hashcode(e)))</span><br><span class="line">        <span class="keyword">return</span> server.get(e)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">route_server</span>(<span class="params">self, _hash: <span class="built_in">int</span></span>) -&gt; <span class="literal">None</span>:</span></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(self._servers) == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">        <span class="keyword">elif</span> self._servers.get(_<span class="built_in">hash</span>) <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            tailed_map = tail_map(self._servers, _<span class="built_in">hash</span>)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">bool</span>(tailed_map):</span><br><span class="line">                _<span class="built_in">hash</span> = first_key(self._servers)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                _<span class="built_in">hash</span> = first_key(tailed_map)</span><br><span class="line">        <span class="keyword">return</span> self._servers.get(_<span class="built_in">hash</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_server</span>(<span class="params">self, s: Server</span>) -&gt; <span class="built_in">bool</span>:</span></span><br><span class="line">        <span class="keyword">if</span> self._size &gt;= self._SERVER_SIZE_MAX:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            self._servers.update(&#123;string_hashcode(<span class="built_in">str</span>(s._name)): s&#125;)</span><br><span class="line">            self._size = self._size + <span class="number">1</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_cluster</span>():</span></span><br><span class="line">    c = Cluster()</span><br><span class="line">    c.add_server(Server(<span class="string">&quot;192.168.0.0&quot;</span>))</span><br><span class="line">    c.add_server(Server(<span class="string">&quot;192.168.0.1&quot;</span>))</span><br><span class="line">    c.add_server(Server(<span class="string">&quot;192.168.0.2&quot;</span>))</span><br><span class="line">    c.add_server(Server(<span class="string">&quot;192.168.0.3&quot;</span>))</span><br><span class="line">    c.add_server(Server(<span class="string">&quot;192.168.0.4&quot;</span>))</span><br><span class="line">    c.add_server(Server(<span class="string">&quot;192.168.0.5&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span> c</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">find_entries</span>(<span class="params">c: Cluster, entries: <span class="type">List</span></span>) -&gt; <span class="literal">None</span>:</span></span><br><span class="line">    <span class="keyword">for</span> e <span class="keyword">in</span> entries:</span><br><span class="line">        <span class="keyword">if</span> e == c.get(e):</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;重新找到了 entry: &#123;&#125;&quot;</span>.<span class="built_in">format</span>(<span class="built_in">str</span>(e)))</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;entry &#123;&#125; 已失效&quot;</span>.<span class="built_in">format</span>(<span class="built_in">str</span>(e)))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span>():</span></span><br><span class="line">    c = create_cluster()</span><br><span class="line">    entries = []</span><br><span class="line">    entry_items = [<span class="string">&quot;i&quot;</span>, <span class="string">&quot;have&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;pen&quot;</span>, <span class="string">&quot;an&quot;</span>, <span class="string">&quot;apple&quot;</span>, <span class="string">&quot;applepen&quot;</span>,</span><br><span class="line">                   <span class="string">&quot;pineapple&quot;</span>, <span class="string">&quot;pineapplepen&quot;</span>, <span class="string">&quot;PPAP&quot;</span>]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> item <span class="keyword">in</span> entry_items:</span><br><span class="line">        entries.append(Entry(item))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> e <span class="keyword">in</span> entries:</span><br><span class="line">        c.put(e)</span><br><span class="line"></span><br><span class="line">    c.add_server(Server(<span class="string">&quot;192.168.0.6&quot;</span>))</span><br><span class="line">    c.add_server(Server(<span class="string">&quot;11&quot;</span>))</span><br><span class="line"></span><br><span class="line">    find_entries(c, entries)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    main()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/wellls/blog/blob/code/consistent_hashing/what-is-consistent-hashing.md">具体见 code 分支</a></li>
+</ul>
+<blockquote>
+<p>Reference</p>
+</blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Consistent_hashing">Wikipedia</a></li>
+<li><a target="_blank" rel="noopener" href="https://community.oracle.com/blogs/tomwhite/2007/11/27/consistent-hashing">Consistent Hashing Blog by Tom White</a></li>
+</ul>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Distributed-System/"># Distributed System</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/04/02/2018-04-02-%E7%95%99%E8%A8%80%E6%9D%BF-%7C-message-board/">留言板 | Message Board</a>
+            
+            
+            <a class="next" rel="next" href="/2018/03/05/2018-03-05-%E4%B8%BA%E4%BB%80%E4%B9%88-golang-%E4%B8%AD%E7%AD%89%E5%BE%85%E5%A4%9A%E4%B8%AA-goroutine-%E9%80%9A%E4%BF%A1%E7%9A%84%E5%85%B3%E9%94%AE%E8%AF%8D%E4%BC%9A%E9%80%89%E7%94%A8-select-%E8%80%8C%E9%9D%9E-switch-/">为什么 Golang 中等待多个 goroutine 通信的关键词会选用 select 而非 switch </a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>Open the Flask —— Flask 源码阅读笔记. | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Open the Flask —— Flask 源码阅读笔记.</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Flask 是一个较为流行的 <code>Python web framework</code> ，其代码以精巧，可读性高著称。 虽然 flask 号称 <code>framework</code> ，但是 Flask 没有 <code>web framework</code> 中普遍存在的模板引擎以及 ORM 或者 ODM 模块。私以为 flask 定位更像是一个 web 应用的脚手架，它允许开发者灵活自由地插拔配件。Flask 的设计理念或许跟 Node.js 中的 express 有些类似，express 同样也只是一个脚手架级别的 web 框架，没有自己的模板引擎、http server 以及 ORM 等插件。两者最大的区别应该是扩展的串联方式不同， 因为 Node.js 特有地异步方式，express 使用 <code>middleware</code> 像链条一样把扩展串联起来，而 flask 的串联方式更像是乐高积木一般的组合。值得一提的是，werkzeug 是 flask 中无法取代的一个‘扩展’。werkzeug 为 flask 封装了 wsgi 与 http server 相关的功能。<br>任何一个 <code>web framework</code> 都不会脱离 <code>server</code> ， <code>url</code>， <code>request</code>， <code>response</code> ， <code>session</code> 这几个模块，我的关注点也主要集中在这几个模块，当然，Flask 的上下文和 werkzeug 也会涉及。</p>
+<p>阅读本文需要的 Python 环境：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(.open_the_flask_env) ➜  flask git:(8605cc3) ✗ pip freeze</span><br><span class="line">Flask==0.1</span><br><span class="line">Jinja2==2.9.6</span><br><span class="line">MarkupSafe==1.0</span><br><span class="line">Werkzeug==0.12.2</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="How-to-run"><a href="#How-to-run" class="headerlink" title="How to run"></a>How to run</h2><p>我们先构建一个最小应用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># hello.py</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello_world</span>():</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;Hello World!&#x27;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><code>app</code> 就是一个 flask 应用，我们通过调用 app 的方法 <code>app.run</code> 来启动应用。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">run</span>(<span class="params">self, host=<span class="string">&#x27;localhost&#x27;</span>, port=<span class="number">5000</span>, **options</span>):</span></span><br><span class="line">    <span class="keyword">from</span> werkzeug <span class="keyword">import</span> run_simple</span><br><span class="line">    <span class="keyword">if</span> <span class="string">&#x27;debug&#x27;</span> <span class="keyword">in</span> options:</span><br><span class="line">        self.debug = options.pop(<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">    options.setdefault(<span class="string">&#x27;use_reloader&#x27;</span>, self.debug)</span><br><span class="line">    options.setdefault(<span class="string">&#x27;use_debugger&#x27;</span>, self.debug)</span><br><span class="line">    <span class="keyword">return</span> run_simple(host, port, self, **options)</span><br></pre></td></tr></table></figure>
+
+<p><code>run</code> 方法接受了 app 调用时传递的 <code>host</code> 、监听的 <code>port</code>以及是否开启 <code>debug</code> 模式，并把这几个参数传递给 werkzeug 的 <code>run_simple</code> 函数，<code>run_simple</code> 的第三个参数 <code>self</code> 是我们创建的 flask app 。 <code>run_simple</code> 函数通过层层调用，终于把参数传递到 <code>BaseWSGIServer</code> ，从而启动了一个 <code>wsgi</code> 应用。<code>BaseWSGIServer</code> 的作用主要是 <code>HTTP</code> 的请求格式转换成 <code>WSGI</code> 格式。 <code>BaseWSGIServer</code> 在启动的同时，也启用了 <code>WSGIRequestHandler</code> , <code>WSGIRequestHandler</code> 会处理客户端的请求，并且发送响应给客户端。但是 <code>WSGIRequestHandler</code> 是 <code>werkzeug</code> 层面的类，它是怎么处理 flask 的 request 的呢？其实 wsgi 应用是可嵌套的。我们尝试在 <code>WSGIRequestHandler</code> 的 <code>execute</code> 方法打印一下参数：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">execute</span>(<span class="params">app</span>):</span></span><br><span class="line">    application_iter = app(environ, start_response)</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;-------&#x27;</span></span><br><span class="line">    <span class="built_in">print</span> <span class="string">&quot;app is &#123;&#125;&quot;</span>.<span class="built_in">format</span>(app)</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;-------&#x27;</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">for</span> data <span class="keyword">in</span> application_iter:</span><br><span class="line">            write(data)</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> headers_sent:</span><br><span class="line">            write(<span class="string">b&#x27;&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>打印的结果是: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> * Running on http://localhost:5000/ (Press CTRL+C to quit)</span><br><span class="line">-------</span><br><span class="line">app is &lt;flask.Flask object at 0x107604150&gt;</span><br><span class="line">-------</span><br></pre></td></tr></table></figure>
+
+<p>我们发现这个 <code>app</code> 参数就是 <code>hello.py</code> 中的 flask app。 flask 实现了一个 <code>__call__</code> 方法，使得 werkzeug 能够调用 flask 实例。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># flask.py</span></span><br><span class="line"><span class="comment"># flask.__call__</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">__call__</span>(<span class="params">self, environ, start_response</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;Shortcut for :attr:`wsgi_app`&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> self.wsgi_app(environ, start_response)</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Route"><a href="#Route" class="headerlink" title="Route"></a>Route</h2><p>上面的步骤就算是成功启动了 <code>wsgi</code> 应用，应用启动之后，就应该想办法根据用户请求的 <code>uri</code> 或者 <code>http method</code> 来调用应用中响应的代码块了。</p>
+<p>继续看上一部分中的 <code>__call__</code> method ，注意它返回的 <code>wsgi_app</code> ，我们先来看看 <code>wsgi_app</code> 长什么样子：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">wsgi_app</span>(<span class="params">self, environ, start_response</span>):</span></span><br><span class="line">    <span class="keyword">with</span> self.request_context(environ):</span><br><span class="line">        rv = self.preprocess_request()</span><br><span class="line">        <span class="keyword">if</span> rv <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            rv = self.dispatch_request()</span><br><span class="line">        response = self.make_response(rv)</span><br><span class="line">        response = self.process_response(response)</span><br><span class="line">        <span class="keyword">return</span> response(environ, start_response)</span><br></pre></td></tr></table></figure>
+
+<p>我们可以看到 <code>wsgi_app</code> 中的先接受了用户请求，然后将用户请求加入 <code>request_context</code> ，(我们先跳过请求上下文的内容)，将请求加入请求上下文之后，先预处理一下用户请求。<br>重点来了，我们继续看 <code>wsgi_app</code> 是怎么分发请求给响应函数的，这里调用了一个 <code>dispatch_request()</code> method ,我们来看看 <code>dispatch_request</code> 长什么样子:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dispatch_request</span>(<span class="params">self</span>):</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        endpoint, values = self.match_request()</span><br><span class="line">        <span class="keyword">return</span> self.view_functions[endpoint](**values)</span><br><span class="line">    <span class="keyword">except</span> HTTPException, e:</span><br><span class="line">        handler = self.error_handlers.get(e.code)</span><br><span class="line">        <span class="keyword">if</span> handler <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">return</span> e</span><br><span class="line">        <span class="keyword">return</span> handler(e)</span><br><span class="line">    <span class="keyword">except</span> Exception, e:</span><br><span class="line">        handler = self.error_handlers.get(<span class="number">500</span>)</span><br><span class="line">        <span class="keyword">if</span> self.debug <span class="keyword">or</span> handler <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">raise</span></span><br><span class="line">        <span class="keyword">return</span> handler(e)</span><br></pre></td></tr></table></figure>
+
+<p><code>dispatch_request</code> 函数会根据请求的 <code>url</code> 规则去匹配响应的 <code>endpoint</code> ，上面提到的<code>request_context</code> 会将用户请的 <code>url</code> 记录，<code>dispatch_request()</code> 中调用的 <code>match_request()</code> 方法会将之前记录的 <code>url</code>和视图函数中的 <code>endpoint</code> 相对应起来。 而 <code>endpoint</code> 是怎么让 <code>dispatch_request()</code> 发现的呢？答案是 <code>werkzeug</code> 和 <code>flask</code> 有一套很神奇的 <code>url match</code> 机制。我们来看一下 flask 中的 <code>route</code> method :</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">route</span>(<span class="params">self, rule, **options</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;A decorator that is used to register a view function for a</span></span><br><span class="line"><span class="string">    given URL rule.  This does the same thing as :meth:`add_url_rule`</span></span><br><span class="line"><span class="string">    but is intended for decorator usage.</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">decorator</span>(<span class="params">f</span>):</span></span><br><span class="line">        endpoint = options.pop(<span class="string">&#x27;endpoint&#x27;</span>, <span class="literal">None</span>)</span><br><span class="line">        self.add_url_rule(rule, endpoint, f, **options)</span><br><span class="line">        <span class="keyword">return</span> f</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> decorator</span><br></pre></td></tr></table></figure>
+
+<p><code>route</code> 方法内嵌了一个 <code>decorator</code> ，装饰器将路由规则， <code>endpoint</code>以及视图函数传递给 <code>add_url_rule</code> 方法，通过调用 <code>add_url_rule</code> 方法的调用，就实现了一个完整 url 的 register 。我们可以来看一下例子:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello</span>()</span></span><br><span class="line"><span class="function">    <span class="title">return</span> &quot;<span class="title">hello</span> <span class="title">world</span>!&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>例子中的 <code>hello()</code> 函数被 <code>route</code> 装饰器修饰，<code>route</code> 装饰器中的参数 <code>&#39;/&#39;</code> 就是 <code>add_url_rule</code> 方法中的形参 <code>rule</code> ，函数名 <code>hello</code> 就是参数列表中的 endpoint ，而函数 <code>hello()</code> 本身，就是参数列表中的 f (f -&gt; function) 。通过装饰器实现路由注册的机制非常优雅，想要注册新路由的时候只要调用一下 <code>@</code> 一下 <code>route</code> ，并给 <code>route</code> 方法响应的参数就行了，不用每次都给视图函数传递包含用户请求信息 <code>environ</code> 参数，以及处理完视图函数之后需要处理的 <code>start_response</code> 操作，写一个路由就像写一个普通的函数一样容易，非常干净得体。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        <a href="/tags/Python/"># Python</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/06/11/2017-06-11-elixir-%E4%B8%AD%E7%9A%84%E5%8C%BF%E5%90%8D%E5%87%BD%E6%95%B0/">Elixir 中的匿名函数</a>
+            
+            
+            <a class="next" rel="next" href="/2017/06/06/2017-06-06-%E4%BB%8E-redis-%E7%9A%84-ae-%E6%A8%A1%E5%9D%97%E5%AD%A6%E4%B9%A0-i-o-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8/">从 Redis 的 ae 模块学习 I/O 多路复用</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

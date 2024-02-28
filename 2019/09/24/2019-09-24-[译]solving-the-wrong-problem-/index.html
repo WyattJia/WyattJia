@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>[译]Solving the wrong problem  | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">[译]Solving the wrong problem </h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="Solving-the-wrong-problem"><a href="#Solving-the-wrong-problem" class="headerlink" title="Solving the wrong problem"></a>Solving the wrong problem</h2><h2 id="解决错误的问题"><a href="#解决错误的问题" class="headerlink" title="解决错误的问题"></a>解决错误的问题</h2><hr>
+<p><em>本文是 Joe Armstrong 安利 lock-free 和自动并行化的一篇随笔。</em><br>原文地址: <a target="_blank" rel="noopener" href="https://joearms.github.io/published/2013-03-28-solving-the-wrong-problem.html">https://joearms.github.io/published/2013-03-28-solving-the-wrong-problem.html</a></p>
+<hr>
+<p>We’re right and the rest of the world is wrong. We (that is Erlang folks) are solving the right problem, the rest of the world (non Erlang people) are solving the wrong problem.</p>
+<p><del>这段有点中二。。</del><br>错的不是我们，而是世界。我们（指的是我们这些信仰 erlang 的人）在解决正确的问题，世界上剩下的人（不信仰 erlang 人）正在解决错误的问题。</p>
+<p>The problem that the rest of the world is solving is how to parallelise legacy code. Up to about 2004 Moore’s law applied. Each year your programs just got faster, you didn’t have to be a better programmer, you didn’t need a smarter algorithm your machine just got faster year on year.</p>
+<p>世界上其他人正在想办法解决如何并行历史遗留代码。知道 2004 年摩尔定律的适用。每过一年，你的程序都将会变得更加快，你不需要变成更好的程序技师，你不需要实现更加高效的算法，因为你的机器每年都会会变得越来越快。</p>
+<p>Chips got bigger and bigger, clock speeds got greater and greater, and programs went faster and faster which improved performance by about 15% per year.</p>
+<p>芯片变得越来越大，CPU 运行速度也变得越来越优越，因此程序也变得越来越快，每年大概能提升 15% 的速度。</p>
+<p>In 2004 this ended. The chips were so big and the clock rates so fast that clock pulses could not reach all parts of the chip in one clock cycle. Circuit designs changed. The multi-core came.</p>
+<p>到了 2004 年末，芯片变得如此大，CPU 频率太快，以致 CPU 频率无法在一个 CPU 时间片内到达整个芯片。然后电路设计就变了，多核 CPU 登上历史舞台了。</p>
+<p>From 2004 chips still got bigger, but clock rates started sinking and the number of CPUs per chip started increasing. We moved from the era of one superfast processor per chip, to several slower and weaker processors per chip.</p>
+<p>从 2004 年开始，芯片仍然在变大，但是 CPU 频率开始下降，每个芯片的 CPU 核心数开始增加。我们从单核高频率 CPU 的时代，开始逐渐迁移到多个稍慢核心芯片的时代。</p>
+<p>At this point in time, sequential programs started getting slower, year on year, and parallel programs started getting faster.</p>
+<p>在这个时间点，串行程序开始变得越来越慢，与此同时，并行程序开始变得更快。</p>
+<p>The problem was that there were no parallel programs, or at least very few.</p>
+<p>问题是当时几乎没有并行程序。</p>
+<p>Now Erlang is (in case you missed it) a concurrent language, so Erlang programs should in principle go a lot faster when run on parallel computers, the only thing that stops this is if the Erlang programs have sequential bottlenecks.</p>
+<p>现在 Erlang 是一门并发友好的编程语言，因此从原理上讲 Erlang 程序应该在并行计算机上运行得更加快速，唯一能够让 Erlang 减速的是 Erlang 程序本身有串行瓶颈。</p>
+<p>Amdahl’s law hits you in the face if your parallel program has any sequential parts.</p>
+<p>阿姆达尔定律会让你直接面对处理时间问题，如果你的并行程序有任何部分的串行逻辑的话。</p>
+<p>Suppose 10% of your program is sequential (the rest being parallel) - the time to execute the parallel bit can be shrunk to zero by having sufficiently many parallel processors. But the sequential part will remain.</p>
+<p>假定你的程序中有 10% 的部分是串行运行（剩下的部分并行运行），执行并行位处理的时间可以通过拥有足够数量的并行处理器来缩小至接近于零。但是串行部分还是会继续保持。</p>
+<p>With 10% sequential code the maximum speedup of your program will be a factor 10. One tenth of the program can never speed up, the time for the other 9/10’s can shrink to zero.</p>
+<p>如果使用 10% 的串行代码，你的程序最大速度将会提高至10倍。程序中将有十分之一的部分将永远也得不到速度提升，其余 9/10 的程序将被缩减至接近于零。</p>
+<p>So for Erlang programmers the trick to speeding up their programs is to find the sequential parts in the code.</p>
+<p>因此，对于 Erlang 程序员来说，提升他们程序速度的关键点在于找出代码中串行运行的部分。</p>
+<p>For anybody who writes sequential code the trick to speeding up their programs is to find the parallel parts in their code.</p>
+<p>对于任何写了串行代码的人来说，提升他们的程序运行速度的关键点就是找到代码中并行的部分。</p>
+<p>The road to automatic parallelisation of sequential programs is littered with corpses. It can’t be done. (not quite true, in some specific circumstances it can, but this is by no means easy).</p>
+<p>在串行程序自动并行化的道路上充满荆棘。这不太可能完成（不是绝对的，在某些特殊情况下可以完成，但是这也并不意味着是容易完成。）</p>
+<p>So now data centers are being filled with shiny new computers and the top-end machines have as many as 24 cores. But what about performance? Are these shiny new machines going 24 times faster?</p>
+<p>所以现在数据中心正在被金光闪闪的最高端的24核心机器塞满。但是性能怎么样呢？这些金光闪闪的新机器真的有提高24倍的速度吗？</p>
+<p>For some problems yes - but for many problems no. For many problems only one of the 24 CPUs is being used. The underutilization of the CPUs is a serious problem. This point was pointed out in Alexander Gounares Brilliant talk at the Erlang factory.</p>
+<p>对于某些场景来说确实是的，但是对于大多数场景都没有提高24倍的速度。大多数的场景下面，24个核心中，只有一个核心会被使用。CPU 利用率不足是一个很严重的问题。Erlang factory 的 Alexander Gounares 在他的精彩演讲时指出了这一点。</p>
+<p>Alexander’s talk gave us a glimpse of the future. His company concurix is showing us where the future leads. They have tools to automate the detection of sequential bottlenecks in Erlang code.</p>
+<p>Alexander 的演讲给了我们一丝未来的曙光。他的公司 concurix 给我们展示了未来的方向。他们提供了可以在 Erlang 代码中自动检测串行瓶颈的部分。</p>
+<p>Concurix have been using these tools to find bottlenecks in the Erlang VM and in their test code and the results are amazing. They found a bottleneck in an image processing application, there was a lock in zlib which was written in C. They rewrote it in Erlang, going from C to Erlang.</p>
+<p>Concurix 已经用这些工具来查找 Erlang VM 和他们自己测试代码中的瓶颈，效果显著。他们发现了一个图像处理程序中的瓶颈，zlib 中有一个使用 C 编写的锁。他们使用 Erlang 重写了这部分代码，完成了从 C 到 Erlang 的转换。</p>
+<p>This is crazy, C should go faster, well yes it does but it had a lock. Erlang was slower but lock-free and thus scaleable. So removing the C and doing image processing in Erlang was faster than doing it in C.</p>
+<p>这看起来有点不可思议，按道理说 C 应该有更快的速度，理论上确实是这样的，但是这部分代码有一个锁。按道理 Erlang 确实会更加慢，但是 Erlang 是 Lock-free 并且可扩展性良好的。所以把 C 实现的图像处理代码改成 Erlang 处理的会更加快。</p>
+<p>I was amazed - this is jaw dropping good stuff.</p>
+<p>我有点惊讶，这是 Erlang 中令人垂涎的好东西。</p>
+<p>When the videos from the Erlang factory come out watch Alexander’s talk and prepare to be amazed. The future is here it arrived last week in San Francisco.</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E7%BF%BB%E8%AF%91/"># 翻译</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/05/26/2020-05-26-aliyun-%E5%87%BD%E6%95%B0%E8%AE%A1%E7%AE%97%E8%BF%90%E8%A1%8C-golang-custom-runtime-%E7%9A%84%E9%BB%91%E9%AD%94%E6%B3%95-%E2%80%94%E2%80%94-%E4%BB%8E-goroutine-%E7%9A%84%E8%B0%83%E5%BA%A6%E8%AF%B4%E8%B5%B7/">Aliyun 函数计算运行 Golang custom runtime 的黑魔法 —— 从 Goroutine 的调度说起</a>
+            
+            
+            <a class="next" rel="next" href="/2019/07/07/2019-07-07-linux-5.1-%E4%B8%AD%E7%9A%84-%60io_uring%60-%E6%98%AF%E4%BB%80%E4%B9%88?/">Linux 5.1 中的 `io_uring` 是什么?</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

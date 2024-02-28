@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>Envoy 入门使用 | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Envoy 入门使用</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>Envoy 是一个面向 service mesh 的高性能网络代理，由 C++ 实现，性能基本持平 NGINX 。本文中我们会在本地环境快速上手使用 envoy 。了解一个开源软件，从官方实例入手再好不过了，因此下面的例子将会围绕官方仓库中的实例展开。</p>
+<h3 id="前提条件"><a href="#前提条件" class="headerlink" title="前提条件"></a>前提条件</h3><ul>
+<li>Docker</li>
+<li>Docker Compose</li>
+<li>Git</li>
+<li>curl</li>
+</ul>
+<p>我们将会使用 Docker 和 Docker Compose 来构建和运行几个 Envoy 示例服务，并用 curl 来检测服务是否在运行。</p>
+<h3 id="运行-Envoy"><a href="#运行-Envoy" class="headerlink" title="运行 Envoy"></a>运行 Envoy</h3><p>首先克隆 Envoy 官方仓库到本地,并定位到 <code>envoy/examples/front-proxy</code> 文件夹。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/envoyproxy/envoy</span><br><span class="line">cd envoy/examples/front-proxy</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<p><code>front-proxy</code> 文件夹中的服务是一个用 Flask 实现的服务，入口文件在 <code>service.py</code> 文件里面。Envoy 作为一个 sidecar 部件，将与 <code>service.py</code> 在同一个容器中运行，并由 <code>docker-compose,.yaml</code> 文件配置。<br><code>front-envoy.yaml</code> 文件配置了 envoy 的参数，<code>Dockerfile-frontenvoy</code> 文件则是 front-envoy 的 Dockerfile 。</p>
+<p>如果你之前没有接触过 Docker 的话，你可以使用以下命令在本地构建并运行 front-proxy 的 Docker 镜像：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> /path/to/envoy/examples/front-proxy</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> docker-compose up --build -d</span></span><br></pre></td></tr></table></figure>
+
+<p><code>--build</code> 表示构建镜像， <code>-d</code> 表示在后台运行所有 docker-compose 配置文件中定义的镜像，具体可参考 docker 相关文档。</p>
+<p>运行成功之后，你可以通过以下命令来验证容器是否正常运行:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker-compose ps</span><br></pre></td></tr></table></figure>
+
+<p>正常的话会返回以下内容:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> front-proxy git:(master) docker-compose ps</span></span><br><span class="line">          Name                         Command               State                            Ports</span><br><span class="line">----------------------------------------------------------------------------------------------------------------------------</span><br><span class="line">front-proxy_front-envoy_1   /usr/bin/dumb-init -- /bin ...   Up      10000/tcp, 0.0.0.0:8000-&gt;80/tcp, 0.0.0.0:8001-&gt;8001/tcp</span><br><span class="line">front-proxy_service1_1      /bin/sh -c /usr/local/bin/ ...   Up      10000/tcp, 80/tcp</span><br><span class="line">front-proxy_service2_1      /bin/sh -c /usr/local/bin/ ...   Up      10000/tcp, 80/tcp</span><br></pre></td></tr></table></figure>
+
+<h3 id="测试服务是否连通"><a href="#测试服务是否连通" class="headerlink" title="测试服务是否连通"></a>测试服务是否连通</h3><p>你可以使用 curl 或者浏览器来测试服务是否在正常运行</p>
+<p>浏览器中输入 <a target="_blank" rel="noopener" href="http://localhost:8000/service/1">http://localhost:8000/service/1</a> 或者使用以下命令:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl localhost:8000/service/1</span><br></pre></td></tr></table></figure>
+
+<p>如果返回结果是像下面这样，则表示 <code>service1</code> 的 envoy 服务正常运行:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Hello from behind Envoy (service 1)! hostname: a841ffceafd0 resolvedhostname: 172.18.0.4</span><br></pre></td></tr></table></figure>
+
+<p>你也可以用同样的方法测试 service 2 的服务</p>
+<p>打开 <a target="_blank" rel="noopener" href="http://localhost:8000/service/2">http://localhost:8000/service/2</a><br>返回 <code>Hello from behind Envoy (service 2)! hostname: e83b35c6f4fe resolvedhostname: 172.18.0.3</code> 。</p>
+<h3 id="Envoy-配置"><a href="#Envoy-配置" class="headerlink" title="Envoy 配置"></a>Envoy 配置</h3><p>下面我们先简单看一下 envoy 的静态配置信息,之后再继续看 demo 中的动态配置信息。因为 docker 和 docker-compose 的配置不是我们的重点，所以我会略过 demo 中与此相关的内容。</p>
+<p>我们先从 <code>front-envoy.yml</code> 入手。打开文件之后，我们会发现这个 yaml 有两个最高的层级，分别是 <code>static-resources</code> 和 <code>admin</code> 。<code>admin</code> 的内容相对比较简单，总共只有六行:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">admin:</span></span><br><span class="line">   <span class="attr">access_log_path:</span> <span class="string">&quot;/dev/null&quot;</span></span><br><span class="line">   <span class="attr">address:</span></span><br><span class="line">     <span class="attr">socket_address:</span></span><br><span class="line">       <span class="attr">address:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></span><br><span class="line">       <span class="attr">port_value:</span> <span class="number">8001</span></span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>access_log_path</code> 字段值是 <code>/dev/null</code>，其含义是 admin 服务的请求日志将不会被保存。生产环境中可自行将目标目录指定到需要的地方。<code>address</code> 和 <code>port_value</code> 字段分别表示 admin server 运行的 ip 端口。</p>
+<p><code>static_resource</code> 的内容定义了非动态管理的集群和监听器相关配置。一个集群是一组被定义的 ip/port 集合，Envoy 将借此实现负载均衡，监听器是一组被定义的网络地址，客户端可借此连接至服务。 </p>
+<p>front proxy 中只有一个监听器，监听器中除了 socket_address 之外还有一个字段是 <code>filter_chains</code>，Envoy 通过此字段来管理 HTTP 的连接和过滤。其中有个配置选项是 <code>virtual_hosts</code> ，通过正则过滤允许访问服务的域名。路由也在其中配置，例子中将 <code>/service/1</code> 和 <code>/service/2</code> 的请求分别转发到了其相应的集群中。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">virtual_hosts:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">backend</span></span><br><span class="line">  <span class="attr">domains:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">&quot;*&quot;</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">match:</span></span><br><span class="line">      <span class="attr">prefix:</span> <span class="string">&quot;/service/1&quot;</span></span><br><span class="line">    <span class="attr">route:</span></span><br><span class="line">      <span class="attr">cluster:</span> <span class="string">service1</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">match:</span></span><br><span class="line">      <span class="attr">prefix:</span> <span class="string">&quot;/service/2&quot;</span></span><br><span class="line">    <span class="attr">route:</span></span><br><span class="line">      <span class="attr">cluster:</span> <span class="string">service2</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<p>接下来我们继续看静态集群的配置:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">clusters:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">service1</span></span><br><span class="line">  <span class="attr">connect_timeout:</span> <span class="number">0.</span><span class="string">25s</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">strict_dns</span></span><br><span class="line">  <span class="attr">lb_policy:</span> <span class="string">round_robin</span></span><br><span class="line">  <span class="attr">http2_protocol_options:</span> &#123;&#125;</span><br><span class="line">  <span class="attr">hosts:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">socket_address:</span></span><br><span class="line">      <span class="attr">address:</span> <span class="string">service1</span></span><br><span class="line">      <span class="attr">port_value:</span> <span class="number">80</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">service2</span></span><br><span class="line">  <span class="attr">connect_timeout:</span> <span class="number">0.</span><span class="string">25s</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">strict_dns</span></span><br><span class="line">  <span class="attr">lb_policy:</span> <span class="string">round_robin</span></span><br><span class="line">  <span class="attr">http2_protocol_options:</span> &#123;&#125;</span><br><span class="line">  <span class="attr">hosts:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">socket_address:</span></span><br><span class="line">      <span class="attr">address:</span> <span class="string">service2</span></span><br><span class="line">      <span class="attr">port_value:</span> <span class="number">80</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>在静态集群的配置内容中，我们可以配置超时时间，熔断器，服务发现等等内容。集群由一系列端点(endpoints)组成，端点就是一组服务集群中可以响应访问请求的网络地址。在上面的例子中，端点标准定义成 DNS ，除此之外，端点可以直接被定义成 socket 地址，或者是可动态读取的服务发现机制。</p>
+<h3 id="尝试动手修改配置"><a href="#尝试动手修改配置" class="headerlink" title="尝试动手修改配置"></a>尝试动手修改配置</h3><p>我们可以在本地尝试自己修改配置，重建镜像，测试修改后的配置。监听过滤器是 Envoy 为监听器提供的附加功能。比方说，想要增加访问日志到我们的 HTTP 过滤器中，只要增加 <code>access_log</code> 字段到配置文件中即可:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="attr">filters:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">envoy.http_connection_manager</span></span><br><span class="line">    <span class="attr">config:</span></span><br><span class="line">      <span class="attr">codec_type:</span> <span class="string">auto</span></span><br><span class="line">      <span class="attr">stat_prefix:</span> <span class="string">ingress_http</span></span><br><span class="line">      <span class="attr">access_log:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">envoy.file_access_log</span></span><br><span class="line">          <span class="attr">config:</span></span><br><span class="line">            <span class="attr">path:</span> <span class="string">&quot;/var/log/access.log&quot;</span></span><br><span class="line">      <span class="attr">route_config:</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>修改之后，先通过 <code>docker-compose down</code> 命令关闭 docker-compose 容器组，然后使用 <code>docker-compose up --build -d</code> 命令重新构建镜像并运行容器组即可。为了验证我们新增的 <code>access_log</code> 字段是否生效，我们可以模拟几次请求之后，手动进入容器内部查看访问日志是否在相应的目录中。进入容器的命令可以用 <code>docker-compose exec front-envoy /bin/bash</code> 。</p>
+<h3 id="管理页面"><a href="#管理页面" class="headerlink" title="管理页面"></a>管理页面</h3><p>Envoy 提供了自己的管理页面，你可以通过 <a target="_blank" rel="noopener" href="http://localhost:8001/">http://localhost:8001</a> 访问。</p>
+<p>管理页面中 <code>/cluster</code> 菜单展示了上游(upstream)集群端口的统计内容，<code>stats</code> 菜单则显示了更多端口的统计内容。更多管理页面的内容你可以直接访问帮助页面 <a target="_blank" rel="noopener" href="http://localhost:8001/help">http://localhost:8001/help</a> 来查看。</p>
+<h3 id="进一步了解"><a href="#进一步了解" class="headerlink" title="进一步了解"></a>进一步了解</h3><h4 id="服务发现"><a href="#服务发现" class="headerlink" title="服务发现"></a>服务发现</h4><p>如果你想进一步了解 envoy 的话, <code>example</code> 文件夹中其实还有好几个可供参考的例子，你可以挨个研究，但是这些例子都只是静态集群。因此想要了解 Envoy 在生产环境运行的配置，可以了解一下官方文档中有关动态服务发现相关的内容: <a target="_blank" rel="noopener" href="https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/service_discovery">service_dicovery</a></p>
+<h4 id="请求处理"><a href="#请求处理" class="headerlink" title="请求处理"></a>请求处理</h4><p>Envoy 中对访问请求的处理流程大致如下，先将请求数据预处理，转成 Envoy 中的 <code>Filter</code>， 读写请求的 filter 分别是 <code>ReadFilter</code> 和 <code>WriteFiler</code>，对每个网络层也有各自的 filter ，TCP 的是 TcpProxyFilter, HTTP 的是 ConnectionManager，都由读 filter <code>ReadFilter</code> 继承而来。各个 filter 预处理完成之后就会组织成上面示例配置文件中有提到的 <code>FilterChain</code>， 收到 <code>FilterChain</code><br>之后会将其路由到指定的集群中，并根据负载均衡获取到相应的地址，然后将请求转发出去。</p>
+<h4 id="事件模型"><a href="#事件模型" class="headerlink" title="事件模型"></a>事件模型</h4><p>Envoy 采用的是跟 NGINX 类似的非阻塞多线程异步IO的架构，因此性能上不会太差。</p>
+<h4 id="与-NGINX-的区别"><a href="#与-NGINX-的区别" class="headerlink" title="与 NGINX 的区别"></a>与 NGINX 的区别</h4><ul>
+<li>Envoy 对 HTTP/2 的支持比 NGINX 更好，支持包括 upstream 和 downstream 在内的双向通信，而 NGINX 支持 downstream 的连接。</li>
+<li>高级负载均衡功能是免费的:)。NGINX 的高级负载均衡功能则需要付费的 NGINX Plus 支持。</li>
+<li>Envoy 支持热更新，NGINX 配置更新之后需要reload</li>
+<li>Envoy 更贴近 service mesh 的使用习惯，NGINX 更贴近传统服务的使用习惯</li>
+</ul>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Infrastructure/"># Infrastructure</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/08/25/2018-08-25-pq4r-%E8%AF%BB%E4%B9%A6%E6%B3%95/">PQ4R 读书法</a>
+            
+            
+            <a class="next" rel="next" href="/2018/04/02/2018-04-02-%E7%95%99%E8%A8%80%E6%9D%BF-%7C-message-board/">留言板 | Message Board</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

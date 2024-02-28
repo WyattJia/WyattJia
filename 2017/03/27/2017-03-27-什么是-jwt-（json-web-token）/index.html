@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>什么是 JWT （json web token） | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">什么是 JWT （json web token）</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="什么是-JWT-？"><a href="#什么是-JWT-？" class="headerlink" title="什么是 JWT ？"></a>什么是 JWT ？</h2><p>   jwt 是一个通过 <a target="_blank" rel="noopener" href="https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32">json-web-token 规范</a> 实现的 token 实例。<br>   一个 jwt 实际上就是一个字符串。用户请求时在请求头或者 URI 附带 jwt ，server 端就能通过解密 jwt 的方式获取用户信息，免去了用户登录操作，简化了流程。因此使用 jwt 来进行用户授权认证是非常轻量和 restful 的。</p>
+<hr>
+<h2 id="JWT-的组成"><a href="#JWT-的组成" class="headerlink" title="JWT 的组成"></a>JWT 的组成</h2><p>   <strong>jwt 由三个部分组成，分别是 头部(header), 签名(signature), 载荷(Payload)，每个部分都是一个 json 对象。将三个 json 对象分别 encode 之后用 ‘.’ 连接起来就是一个 jwt 。</strong></p>
+<h3 id="头部-Header"><a href="#头部-Header" class="headerlink" title="头部 (Header)"></a>头部 (Header)</h3><p>jwt 头部用来描述关于该 jwt 最基本的信息，例如 token 类型，签名所用的算法等等。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   <span class="attr">&quot;typ&quot;</span>: <span class="string">&quot;JWT&quot;</span>,</span><br><span class="line">   <span class="attr">&quot;alg&quot;</span>: <span class="string">&quot;HS256&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>上面的例子中 typ 表示此 token 是 jwt ,alg 表示签名所用的算法是 HS256 。对 header 进行了 base64 编码之后就变成了 <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</code> 。</strong></p>
+<h3 id="载荷-payload"><a href="#载荷-payload" class="headerlink" title="载荷 (payload)"></a>载荷 (payload)</h3><p><strong>payload 供开发者存放有效信息。有效信息通常包括三个部分。</strong></p>
+<ol>
+<li>JWT 标准中注册的声明</li>
+<li>公共的声明</li>
+<li>私有的声明</li>
+</ol>
+<hr>
+<ul>
+<li>JWT 标准中注册的声明(建议但不强制使用)：<ul>
+<li>iss: jwt签发者</li>
+<li>sub: jwt所面向的用户</li>
+<li>aud: 接收jwt的一方</li>
+<li>exp: jwt的过期时间，这个过期时间必须要大于签发时间</li>
+<li>nbf: 定义在什么时间之前，该jwt都是不可用的.</li>
+<li>iat: jwt的签发时间</li>
+<li>jti: jwt的唯一身份标识，主要用来作为一次性token,从而回避重放攻击。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ul>
+<li>公共的声明<br>公共的声明可以添加任何信息，一般添加业务逻辑相关的必要信息，比如说用户信息，APP 信息等等，但是不建议添加敏感信息。</li>
+</ul>
+<hr>
+<ul>
+<li><p>私有的声明是提供者和消费者共同定义的声明，同样不建议存放敏感信息。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;exp&quot;</span>: <span class="number">1488258366</span>,</span><br><span class="line">    <span class="attr">&quot;iat&quot;</span>: <span class="number">1487048766</span>,</span><br><span class="line">    <span class="attr">&quot;nbf&quot;</span>: <span class="number">1487048766</span>,</span><br><span class="line">    <span class="attr">&quot;identity&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;uid&quot;</span>: <span class="string">&quot;5809da9aa9ffb0431c152bd5&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;email&quot;</span>: <span class="string">&quot;somebody@mail.com&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;somebody&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;joindate&quot;</span>: <span class="string">&quot;2016-10-21 09:08&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  <strong>上面的例子中， exp 表示 jwt 过期时间是<code>1488258366</code>，iat 表示 jwt 签发时间是 <code>1487048766</code>，nbf 表示定义在 jwt 启用时间 为 <code>1487048766</code> ， identity 则是一个公共的声明，包含了部分用户信息。base64 之后得到了 jwt 的第二部分 <code>eyJpZGVudGl0eSI6eyJqb2luZGF0ZSI6IjIwMTYtMTAtMjEgMDk6MDgiLCJ1aWQiOiI1ODA5ZGE5YWE5ZmZiMDQzMWMxNTJiZDUiLCJuYW1lIjoic29tZWJvZHkiLCJlbWFpbCI6InNvbWVib2R5QG1haWwuY29tIn0sImlhdCI6MTQ4NzA0ODc2NiwibmJmIjoxNDg3MDQ4NzY2LCJleHAiOjE0ODgyNTgzNjZ9</code></strong></p>
+</li>
+</ul>
+<h3 id="签名-signature"><a href="#签名-signature" class="headerlink" title="签名 (signature)"></a>签名 (signature)</h3><p>signature 由三个部分组成：</p>
+<ol>
+<li>header (base64 后的)</li>
+<li>payload (base64后的)</li>
+<li>secret</li>
+</ol>
+<p> 将前面编码的到的两个部分用 <code>.</code> 连接之后得到了: <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGl0eSI6eyJqb2luZGF0ZSI6IjIwMTYtMTAtMjEgMDk6MDgiLCJ1aWQiOiI1ODA5ZGE5YWE5ZmZiMDQzMWMxNTJiZDUiLCJuYW1lIjoic29tZWJvZHkiLCJlbWFpbCI6InNvbWVib2R5QG1haWwuY29tIn0sImlhdCI6MTQ4NzA0ODc2NiwibmJmIjoxNDg3MDQ4NzY2LCJleHAiOjE0ODgyNTgzNjZ9</code><br><strong>最后，我们将上面拼接完的字符串用 header 中 alg 所指定的算法 HS256 进行 salt 加密，加密的时候还需要提供一个密钥 <code>secret</code> 作为 salt .然后就构成了 jwt 的第三部分。</strong></p>
+<p><strong>注意：secret是保存在服务器端的，jwt的签发生成也是在服务器端的，secret就是用来进行jwt的签发和jwt的验证，所以，它就是你服务端的私钥，在任何场景都不应该流露出去。一旦客户端得知这个secret, 那就意味着客户端是可以自我签发jwt了。</strong></p>
+<p>假定 secret 为 <code>example_key</code> 完整的 jwt 如下:<br><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGl0eSI6eyJqb2luZGF0ZSI6IjIwMTYtMTAtMjEgMDk6MDgiLCJ1aWQiOiI1ODA5ZGE5YWE5ZmZiMDQzMWMxNTJiZDUiLCJuYW1lIjoic29tZWJvZHkiLCJlbWFpbCI6InNvbWVib2R5QG1haWwuY29tIn0sImlhdCI6MTQ4NzA0ODc2NiwibmJmIjoxNDg3MDQ4NzY2LCJleHAiOjE0ODgyNTgzNjZ9.hZRqFONsQcm6LH0Qv85tFgj3mWDYeUCEiTShZdkKhWc</code></p>
+<hr>
+<h2 id="相关链接"><a href="#相关链接" class="headerlink" title="相关链接"></a>相关链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Base64">base64</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/JSON_Web_Token">Json web token</a></li>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/SHA-2">SHA-2</a>   <em>JWT 的 HS256 算法基于 SHA-2</em></li>
+<li><a target="_blank" rel="noopener" href="http://jwt.io/">jwt.io</a></li>
+<li><a target="_blank" rel="noopener" href="https://nginx.org/en/docs/http/ngx_http_auth_jwt_module.html">Nginx jwt module</a></li>
+</ul>
+<hr>
+<h2 id="一些补充"><a href="#一些补充" class="headerlink" title="一些补充"></a>一些补充</h2><h4 id="签名的目的"><a href="#签名的目的" class="headerlink" title="签名的目的"></a>签名的目的</h4><p>signature 部分中 salt 加密的过程，实际上是对头部以及载荷内容进行签名。如果 server 端对 jwt 的 header 和 payload 再次以 header 中的 <code>alg</code> salt 之后发现，服务器端计算出来的 token 与接收到的 token 不一致，那么可以说明这个 token 是假的。</p>
+<h4 id="信息会暴露？"><a href="#信息会暴露？" class="headerlink" title="信息会暴露？"></a>信息会暴露？</h4><p>是的，信息确实会暴露。</p>
+<p>因为 Header 和 payload 均采用了 base64 编码(相当于明文)，所以 jwt 中是不适合放置敏感信息的。</p>
+<h4 id="JWT的适用场景"><a href="#JWT的适用场景" class="headerlink" title="JWT的适用场景"></a>JWT的适用场景</h4><p>JWT适合用于在 Web 应用之间传递非敏感信息，帮助实现 Web 应用之间的业务逻辑以及用户授权，单点登录等等。</p>
+<hr>
+<h2 id="Enjoy"><a href="#Enjoy" class="headerlink" title="Enjoy  :)"></a>Enjoy  :)</h2>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/03/27/2017-03-27-%E7%BB%9F%E8%AE%A1%E5%90%8C%E4%B8%80%E4%B8%AA%E7%9B%AE%E5%BD%95%E4%B8%8B%E5%A4%9A%E4%B8%AA-pdf-%E6%96%87%E4%BB%B6%E9%A1%B5%E6%95%B0%E7%9A%84%E4%B8%80%E6%AE%B5%E4%BB%A3%E7%A0%81/">统计同一个目录下多个 PDF 文件页数的一段代码</a>
+            
+            
+            <a class="next" rel="next" href="/2017/03/27/2017-03-27-%E4%BB%80%E4%B9%88%E6%98%AF-actor-model-%EF%BC%8C%E5%92%8C%E5%8D%8F%E7%A8%8B%E5%8F%88%E6%9C%89%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB/">什么是 Actor Model ，和协程又有什么关系</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

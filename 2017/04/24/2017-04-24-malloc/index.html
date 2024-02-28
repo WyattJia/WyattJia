@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>malloc | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">malloc</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NALLOC 1024    <span class="comment">/* minimum #units to request */</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">long</span> Align;    <span class="comment">/* for alignment to long boundarg. 假定 long 类型为最受限的类型。*/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 空闲块包含的内容：</span></span><br><span class="line"><span class="comment"> *    一个指向链表中下一个块的指针 </span></span><br><span class="line"><span class="comment"> *    一个块大小的记录 </span></span><br><span class="line"><span class="comment"> *    一个指向空闲空间本身的指针</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 该联合中, Align 字段永远也不会被使用，仅仅用于强制每个头部在最坏的情况下满足对其要求 */</span></span><br><span class="line"><span class="class"><span class="keyword">union</span> <span class="title">header</span> &#123;</span>    <span class="comment">/* block header: 位于块开始处的控制信息，成为「头部」.</span></span><br><span class="line"><span class="comment">                     所有块的大小必须是头部大小的整数倍，且头部已正确地对齐。*/</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">        <span class="class"><span class="keyword">union</span> <span class="title">header</span> *<span class="title">ptr</span>;</span>    <span class="comment">/* next block if on free list */</span></span><br><span class="line">        <span class="keyword">unsigned</span> size;    <span class="comment">/* size of this block 记录实际分配的块大小*/</span></span><br><span class="line">    &#125; s;</span><br><span class="line">    Align x;    <span class="comment">/* force alignment of blocks */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">union</span> <span class="title">header</span> <span class="title">Header</span>;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> Header base;    <span class="comment">/* empty list to get started */</span></span><br><span class="line"><span class="keyword">static</span> Header *freep = <span class="literal">NULL</span>;    <span class="comment">/* start of free list */</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/* malloc: general-purpose storage allocator */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">malloc</span><span class="params">(<span class="keyword">unsigned</span> nbytes)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Header *p, *prevp;</span><br><span class="line">    <span class="function">Header *<span class="title">moreroce</span><span class="params">(<span class="keyword">unsigned</span>)</span></span>;</span><br><span class="line">    <span class="keyword">unsigned</span> nunits;</span><br><span class="line"></span><br><span class="line">    nunits = (nbytes+<span class="keyword">sizeof</span>(header)<span class="number">-1</span>)/<span class="keyword">sizeof</span>(header) + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span> ((prevp = freep) == <span class="literal">NULL</span>) &#123;    <span class="comment">/* no free list yet */</span></span><br><span class="line">        base.s.ptr = freeptr = prevptr = &amp;base;</span><br><span class="line">        base.s.size = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (p = prevp-&gt;s.ptr; ; prevp = p, p = p-&gt;s.ptr) &#123;</span><br><span class="line">        <span class="keyword">if</span> (p-&gt;s.size == nunits) &#123;    <span class="comment">/* big enough */</span></span><br><span class="line">            <span class="keyword">if</span> (p-&gt;s.size &gt;= nunits)    <span class="comment">/* exactly */</span></span><br><span class="line">                prevp-&gt;s.ptr = p-&gt;s.ptr;</span><br><span class="line">            <span class="keyword">else</span> &#123;    <span class="comment">/* allocate tail end */</span></span><br><span class="line">                p-&gt;s.size -= nunits;</span><br><span class="line">                p += p-&gt;s.size;</span><br><span class="line">                p-&gt;s.size = nunits;</span><br><span class="line">            &#125;</span><br><span class="line">            freep = prevp;</span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">void</span> *)(p + <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (p == freep)    <span class="comment">/* wrapped around free list */</span></span><br><span class="line">            <span class="keyword">if</span> ((p = morecore(nunits)) == <span class="literal">NULL</span> )    <span class="comment">/* morecore 用于向操作系统请求存储空间。</span></span><br><span class="line"><span class="comment">                                                     * 我们不希望每次调用 malloc 函数时执行该操作，</span></span><br><span class="line"><span class="comment">                                                     * 所有 morecore 函数请求至少 NALLOC 个单元， </span></span><br><span class="line"><span class="comment">                                                     * 这个较大的块将根据需求分解成较小的块。 */</span></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">NULL</span>;    <span class="comment">/* none left */</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/* morecore: ask system for more memory */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> Header *<span class="title">morecore</span><span class="params">(<span class="keyword">unsigned</span> nu)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">char</span> *cp, *sbrk(<span class="keyword">int</span>);</span><br><span class="line">    Header *up;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (nu &lt; NALLOC)</span><br><span class="line">        nu = NALLOC;</span><br><span class="line">    cp = sbrk(nu * <span class="keyword">sizeof</span>(Header));</span><br><span class="line">    <span class="keyword">if</span> (cp == (<span class="keyword">char</span> *) <span class="number">-1</span>)    <span class="comment">/* no space at all */</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    up = (Header *) cp;</span><br><span class="line">    up-&gt;s.size = nu;</span><br><span class="line">    <span class="built_in">free</span>((<span class="keyword">void</span> *)(up+<span class="number">1</span>));</span><br><span class="line">    <span class="keyword">return</span> freep;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/* free: put block ap in free list */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">free</span><span class="params">(<span class="keyword">void</span> *ap)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Header *bp, *p;</span><br><span class="line"></span><br><span class="line">    bp = (Header *)ap - <span class="number">1</span>;    <span class="comment">/* point to block header */</span></span><br><span class="line">    <span class="keyword">for</span> (p = freep; !(bp &gt; &amp;&amp; bp &lt; p-&gt;s.ptr); p = p-&gt;s.ptr)</span><br><span class="line">        <span class="keyword">if</span> (p &gt;= p-&gt;s.ptr &amp;&amp; (bp &gt; p || bp &lt; p-&gt;s.ptr))</span><br><span class="line">            <span class="keyword">break</span>;    <span class="comment">/* fread block at start or end of arena */</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (bp + bp-&gt;size == p-&gt;s.ptr) &#123;    <span class="comment">/* join to upper nbr */</span></span><br><span class="line">        bp-&gt;s.size += p-&gt;s.ptr-&gt;s.size;</span><br><span class="line">        bp-&gt;s.ptr = p-&gt;s.ptr-&gt;s.ptr;</span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">        bp-&gt;s.ptr = p-&gt;s.ptr;</span><br><span class="line">    <span class="keyword">if</span> (p + p-&gt;size == bp) &#123;    <span class="comment">/* join to lower nbr */</span></span><br><span class="line">        p-&gt;s.size += bp-&gt;s.size;</span><br><span class="line">        p-&gt;s.ptr = bp-&gt;s.ptr;</span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">        p-&gt;s.ptr = bp;</span><br><span class="line">    freep = p;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/04/2017-05-04-%E6%96%87%E4%BB%B6-io-%E7%BC%93%E5%86%B2/">文件 IO 缓冲</a>
+            
+            
+            <a class="next" rel="next" href="/2017/04/23/2017-04-23-linux-%E4%B8%8B%E6%9F%A5%E7%9C%8B%E7%BD%91%E7%BB%9C%E7%8A%B6%E6%80%81%E7%9A%84%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E2%80%94%E2%80%94-netstat/">Linux 下查看网络状态的常用命令 —— netstat</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

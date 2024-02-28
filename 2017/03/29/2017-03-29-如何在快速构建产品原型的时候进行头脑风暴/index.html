@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>如何在快速构建产品原型的时候进行头脑风暴 | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">如何在快速构建产品原型的时候进行头脑风暴</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>大家一起进行头脑风暴的时候很容易对讨论结构失去控制，折腾了半天乱成一团。大家在挤一个房间里，面对着白板和便签条，期待着会有伟大的事情发生。问题是房间里面即使某个人有个很伟大的想法，但是通常不会有非常明确的方式来决定应该采取的行动。</p>
+<h3 id="应用用户故事映射链接的诞生"><a href="#应用用户故事映射链接的诞生" class="headerlink" title="应用用户故事映射链接的诞生"></a>应用用户故事映射链接的诞生</h3><p>大约一年以前，我和我的同事Michael（AJ＆Smart的创始合伙人）正坐在一个由梦幻般的阿德里安·霍华德（Arian Howard）经营的大师班，就敏捷开发中的功能优先级问题。 更具体地说，我们问我们如何决定下一个功能，何时应该被释放。</p>
+<p>通过课堂上的练习，点击了我们：这种相当干燥，系统的方法可能是构建我们的产品发现研讨会的有趣方式。 所以一周之后，当我们想要尝试一种新技术时，我们做了我们一直在做的事情：我们在一个高风险的客户端上进行了测试，没有太多的准备或反思。<br>它是完美的。 将用户故事映射带到一个专注于思想和发现的研讨会上的结构正是我们所需要的。 自从以后，我们一直在使用这种技术，并将其修改为车间到车间，使其更加有用。 我们现在称之为应用用户故事映射 （应用USM），因为它已经采取了自己的生活。 过去一年来，我们与所有客户一起使用它来发布或增加许多成功的产品。 在过去一年中，我们发现，应用USM不仅仅是一个很好的方式来获得没有人会想到的想法，它也是您的客户或利益相关者的完美对齐工具。 让我准确地告诉你它是如何完成的。</p>
+<h4 id="用品需要"><a href="#用品需要" class="headerlink" title="用品需要"></a>用品需要</h4><ul>
+<li>Post-it笔记，三种不同的颜色</li>
+<li>彩色编码标签</li>
+<li>夏普标记</li>
+<li>墙壁或平面</li>
+<li>一个主持人</li>
+</ul>
+<h4 id="总需要时间"><a href="#总需要时间" class="headerlink" title="总需要时间"></a>总需要时间</h4><p>有10-15人，计划45-50分钟。 增加约10分钟，并增加了每10名人员的额外主持人。 例如：</p>
+<ul>
+<li>10-15名参加者：1名主持人，50分钟</li>
+<li>15-25人参加：2名主持人，60分钟</li>
+</ul>
+<h2 id="第一步：故事"><a href="#第一步：故事" class="headerlink" title="第一步：故事"></a>第一步：故事</h2><p>整个过程的骨干是故事。 这个故事只是您在特定时间段内设计的假设用户的步骤或动作的列表。 （找出用户是谁，那是另一天）。<br><a href="url://">img</a></p>
+<h6 id="用户可能在一个故事中采取的一些步骤的示例。"><a href="#用户可能在一个故事中采取的一些步骤的示例。" class="headerlink" title="用户可能在一个故事中采取的一些步骤的示例。"></a>用户可能在一个故事中采取的一些步骤的示例。</h6><p>例如，如果我们正在谈论为体育迷专门设计新闻阅读器，我们可能会在比赛当天创造一个故事。 或者如果我们为常旅客设计一个新的优质服务，我们可能会有一个更先进的故事从第一次预订一直延伸到飞行本身。</p>
+<h4 id="如何创建故事"><a href="#如何创建故事" class="headerlink" title="如何创建故事"></a>如何创建故事</h4><ul>
+<li><p>所有参赛者应该有一堆黄色的Post-it和Sharpie。</p>
+</li>
+<li><p>给予参与者七分钟，以便在所选择的用户的时间框架内写出尽可能多的步骤（这可以是每人10-25张后）。<br><a href="url://">img</a></p>
+<h6 id="参与者撰写步骤。"><a href="#参与者撰写步骤。" class="headerlink" title="参与者撰写步骤。"></a>参与者撰写步骤。</h6></li>
+<li><p>这些步骤的细节将会因人而异，没关系。</p>
+</li>
+<li><p>一旦时间到了，房间里的每一个人都应该把他们的Post到它所选择的平面，并开始创建一个步骤的时间表。 最后应该只有一个水平的时间轴。 许多人会有类似的步骤，而这些步骤应该简单地堆放在彼此之间。</p>
+</li>
+</ul>
+<p><a href="url">img</a></p>
+<h6 id="保持时间轴水平，避免任何垂直列。-稍后我们需要这个空间。"><a href="#保持时间轴水平，避免任何垂直列。-稍后我们需要这个空间。" class="headerlink" title="保持时间轴水平，避免任何垂直列。 稍后我们需要这个空间。"></a>保持时间轴水平，避免任何垂直列。 稍后我们需要这个空间。</h6><h2 id="步骤2：组合动作"><a href="#步骤2：组合动作" class="headerlink" title="步骤2：组合动作"></a>步骤2：组合动作</h2><p>为了保持整洁，我们将在时间轴上对动作进行分组。 当您的故事跨越多天时，这是特别有用的。 之后，我们可以使用这些小组轻松找到要重点介绍的哪个部分。 这很简单，只能由主持人进行。<br><a href="url://">img</a></p>
+<h6 id="让我们做一些团体！"><a href="#让我们做一些团体！" class="headerlink" title="让我们做一些团体！"></a>让我们做一些团体！</h6><h4 id="如何组合动作"><a href="#如何组合动作" class="headerlink" title="如何组合动作"></a>如何组合动作</h4><ul>
+<li>主持人看时间表，决定“早上准备”，“上班”，“上班”，“午餐”，“上下班”，“晚餐”等等。</li>
+<li>使用橙色Post-it，主持人只需在每个部分的开头放一个组名。</li>
+</ul>
+<p><a href="url://">img</a></p>
+<h6 id="你可以按照你喜欢的团体获得一些特定的东西，但通常四到五组都是可以的。"><a href="#你可以按照你喜欢的团体获得一些特定的东西，但通常四到五组都是可以的。" class="headerlink" title="你可以按照你喜欢的团体获得一些特定的东西，但通常四到五组都是可以的。"></a>你可以按照你喜欢的团体获得一些特定的东西，但通常四到五组都是可以的。</h6><p><a href="url://">img</a></p>
+<h6 id="美丽。"><a href="#美丽。" class="headerlink" title="美丽。"></a>美丽。</h6><h2 id="步骤3：头脑风暴！"><a href="#步骤3：头脑风暴！" class="headerlink" title="步骤3：头脑风暴！"></a>步骤3：头脑风暴！</h2><p>现在有趣的部分。 参与者应尽量在考虑相关的时间线上提出尽可能多的想法。 这里的想法是查看时间轴上的一个步骤（例如“唤醒”），然后提出有关您的产品或服务如何影响用户的生活或与用户的生活交互的想法。 新闻阅读器应用程序的示例可能如下所示：</p>
+<p><a href="url://">img</a></p>
+<h6 id="时间到头脑风暴。"><a href="#时间到头脑风暴。" class="headerlink" title="时间到头脑风暴。"></a>时间到头脑风暴。</h6><p>参与者只需15分钟即可完成此步骤，但是足够的时间可以吐出很多想法。 主持人要告诉参与者这项工作需要质量数量很重要。 这些想法是否可行甚至合法无关紧要！ 在每个时间段内让每个人尽可能多地吐出想法。</p>
+<h4 id="如何头脑风暴链接"><a href="#如何头脑风暴链接" class="headerlink" title="如何头脑风暴链接"></a>如何头脑风暴链接</h4><h1 id="所有参与者应该有一堆蓝色的Post-it和一个Sharpie。"><a href="#所有参与者应该有一堆蓝色的Post-it和一个Sharpie。" class="headerlink" title="所有参与者应该有一堆蓝色的Post-it和一个Sharpie。"></a>所有参与者应该有一堆蓝色的Post-it和一个Sharpie。</h1><h1 id="参与者应该围绕着他们的Post-it的故事时间表，准备写。"><a href="#参与者应该围绕着他们的Post-it的故事时间表，准备写。" class="headerlink" title="参与者应该围绕着他们的Post-it的故事时间表，准备写。"></a>参与者应该围绕着他们的Post-it的故事时间表，准备写。</h1><h1 id="给参与者15分钟，尽可能多地写出想法。"><a href="#给参与者15分钟，尽可能多地写出想法。" class="headerlink" title="给参与者15分钟，尽可能多地写出想法。"></a>给参与者15分钟，尽可能多地写出想法。</h1><h1 id="后期应放置在相关步骤下方的垂直线上。"><a href="#后期应放置在相关步骤下方的垂直线上。" class="headerlink" title="后期应放置在相关步骤下方的垂直线上。"></a>后期应放置在相关步骤下方的垂直线上。</h1><h1 id="与时间轴无关的任何想法都可以放置在时间轴左侧的单独堆叠中。"><a href="#与时间轴无关的任何想法都可以放置在时间轴左侧的单独堆叠中。" class="headerlink" title="与时间轴无关的任何想法都可以放置在时间轴左侧的单独堆叠中。"></a>与时间轴无关的任何想法都可以放置在时间轴左侧的单独堆叠中。</h1><p><a href="url://">img</a></p>
+<h6 id="如果看起来不像这样，一些事情变得非常错误。"><a href="#如果看起来不像这样，一些事情变得非常错误。" class="headerlink" title="如果看起来不像这样，一些事情变得非常错误。"></a>如果看起来不像这样，一些事情变得非常错误。</h6><ul>
+<li>我建议在这里玩一些音乐，让人们流口水。 尝试这个播放列表 如果你不想找到自己的。</li>
+<li>15分钟后，参加者应该坐下来，主持人应该读出每一个蓝色的Post-it。 这样，房间里的每个人都会听到别人的想法。 当一些人有可怕的笔迹时，这是特别有用的。</li>
+</ul>
+<p><a href="url://">img</a></p>
+<h6 id="看看那些令人惊叹的堆栈。"><a href="#看看那些令人惊叹的堆栈。" class="headerlink" title="看看那些令人惊叹的堆栈。"></a>看看那些令人惊叹的堆栈。</h6><h2 id="步骤4：投票安排"><a href="#步骤4：投票安排" class="headerlink" title="步骤4：投票安排"></a>步骤4：投票安排</h2><p>现在，房间里的每个人都明白什么想法在时间轴上，现在是时候投票找出最喜欢的。 通过这种方式，我们可以快速挑选组内的趋势，并开始对功能和想法进行优先排序。</p>
+<p><a href="url://">img</a></p>
+<h6 id="现在是时候作出决定了。"><a href="#现在是时候作出决定了。" class="headerlink" title="现在是时候作出决定了。"></a>现在是时候作出决定了。</h6><h4 id="如何投票"><a href="#如何投票" class="headerlink" title="如何投票"></a>如何投票</h4><ul>
+<li>给所有参与者六个点。 颜色无关紧要，除非你想突出特定的利益相关者。</li>
+<li>给参与者八分钟的时间投票表决。 最好不要让参与者投票选择自己喜欢的东西，这太主观了。 相反，要给出一个特定的目标，比如“一个星期内我们可以做什么样的原型”？还是“这个人的日子会好几十倍？” </li>
+</ul>
+<p><a href="url://">img</a></p>
+<h6 id="表决。"><a href="#表决。" class="headerlink" title="表决。"></a>表决。</h6><ul>
+<li>一旦所有参与者投票，主持人应以投票方式收集所有Post-it，并以投票方式垂直安排。</li>
+</ul>
+<p><a href="url://">img</a></p>
+<h6 id="表决。-1"><a href="#表决。-1" class="headerlink" title="表决。"></a>表决。</h6><p><a href="url://">img</a></p>
+<h6 id="表决。-2"><a href="#表决。-2" class="headerlink" title="表决。"></a>表决。</h6><h2 id="关于优先级链接的注释"><a href="#关于优先级链接的注释" class="headerlink" title="关于优先级链接的注释"></a>关于优先级链接的注释</h2><p>优先列出的功能和想法很好，但是还没有考虑到应该进一步开发哪些功能和想法。 一些项目可能是不可行的，需要几个月的时间来开发。 这就是为什么在这一点上，我们通常会将蓝色的Post-it笔记放在努力/影响量表上。 这是一个很好的方式，让人们疯狂的想法不能马上开发出他们的想法没有丢失的感觉，同时能够专注于实际上可行的。<br><a href="url://">img</a></p>
+<h6 id="影响-努力量表。"><a href="#影响-努力量表。" class="headerlink" title="影响/努力量表。"></a>影响/努力量表。</h6><p>确定“影响”究竟意味着什么是重要的，因为它可以与功能对用户，业务或正在解决的具体问题的影响有关。</p>
+<h2 id="使用和适应应用的USM-链接"><a href="#使用和适应应用的USM-链接" class="headerlink" title="使用和适应应用的USM 链接"></a>使用和适应应用的USM 链接</h2><p>正如我所说，我们使用每个客户端应用的USM，但这里有一些具体情况。</p>
+<ul>
+<li>我们帮助eBay为他们的新服务eBay Plus 提供小说和愉快的福音。 即使服务本身集中在卖方，我们从买方的角度制定了时间表，以考虑Plus服务给予他们的优势。</li>
+<li>我们为德国足球联盟（德甲） 制定了足球迷的比赛日和非比赛日，以了解我们如何改进他们的经验。 这意味着我们需要创建两个单独的时间表来研究。 因此，我们已将此双时间轴用于具有多种用户类型或场景的其他产品。</li>
+<li>我们使用这个过程来思考银行的未来如何寻找惊人的数字 ，然后使用结果创建多个原型进行测试。 在这种情况下，时间表从醒来到睡觉，并且包括很多细节，到这个用户去吃饭的地方。 这使我们能够考虑非常细微的通知和特定功能。</li>
+</ul>
+<h2 id="唷！-这是应用USM-链接"><a href="#唷！-这是应用USM-链接" class="headerlink" title="唷！ 这是应用USM 链接"></a>唷！ 这是应用USM 链接</h2><p>在这个过程中，您现在应该有一个很好的想法，功能建议或解决方案，房间里的每个人都创建和投票。 当然，为了进行全面的产品发现或创新研讨会，我在应用用户故事映射之前和之后，都要排除大量的步骤。 通常， 在我们了解一些我们正在设计的用户之后 ，应用USM是一步，所以我们有一些基本的角色，但是在草拟具体的接口或服务想法之前。 一天的产品发现研讨会通常看起来有点像这样：</p>
+<ul>
+<li>一般介绍和讨论产品/服务目标</li>
+<li>创造精神角色</li>
+<li>应用USM</li>
+<li>优先解决方案的故事板</li>
+<li>草绘潜在的产品/功能</li>
+<li>决定什么样的原型和测试</li>
+</ul>
+<h2 id="何时使用应用的USM-链接"><a href="#何时使用应用的USM-链接" class="headerlink" title="何时使用应用的USM 链接"></a>何时使用应用的USM 链接</h2><p>应用USM是一种非常灵活和灵活的练习，可用于任何产品或服务的思维过程。 应用USM是便宜和容易尝试。 这也是您可以在一个小型产品团队中尝试的事情，然后将您公司的其余部分暴露给它。 我建议您尝试一些不重要的东西，例如更新产品的用户帐户部分，或突出显示增加用户参与您现有用户流量的机会（例如，我们可以在一周内向用户发送有用的通知）。<br>我希望你有机会在自己的公司或与你自己的客户一起尝试这个练习。 如果你这样做，请告诉我怎么回事！</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/WIP/"># WIP</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/03/30/2017-03-30-%E9%A3%8E/">风</a>
+            
+            
+            <a class="next" rel="next" href="/2017/03/27/2017-03-27-%E4%BD%BF%E7%94%A8-exrm-+-nginx-%E9%83%A8%E7%BD%B2-phoenix-%E5%BA%94%E7%94%A8/">使用 Exrm + Nginx 部署 Phoenix 应用</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

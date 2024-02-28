@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>译 《The beauty of Programming by Linus Torvalds》 | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">译 《The beauty of Programming by Linus Torvalds》</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>原文地址: <a target="_blank" rel="noopener" href="https://www.brynmawr.edu/cs/resources/beauty-of-programming">The Beauty of Programming</a></p>
+<hr>
+<h1 id="编程之美"><a href="#编程之美" class="headerlink" title="编程之美"></a>编程之美</h1><p>我不知道如何来解释编程对于我的吸引力，但是我会尽力尝试表达。对于某些爱好编程的人来说，这是世界上最有趣的一件事。这是一个比象棋更具吸引力的游戏，一个能够让你制定自己的规则并最终得到你想要结果的游戏。</p>
+<p>当然，从其他人的角度来讲，编程可能是地球上最无聊的事了。</p>
+<p>初入编程时的激动感很容易表达：事实上就是你告诉计算机做某件事，然后计算机准确无误的照做了，而且它永远也不会有任何抱怨。</p>
+<p>这本身就很有趣。</p>
+<p>但是盲目服从自己的指令，只会在起初的时候吸引人，显然不会成为一个讨人喜欢的‘伴侣’。编程真正让你感兴趣的原因是，你不但可以让计算机做你想要做的事，而且你还可以彻底搞清楚其中的原理。</p>
+<p>我个人坚信计算机科学和物理学之间有着许多共同点。两者关注的都是世界是如何运行在一个较为基本的层级上。当然，两者间的区别是，在物理学中，你的重点更应该是搞清楚世界是如何构成的，而计算机科学中重点是你创造了什么‘世界’。在计算机的范围内，你就是造物主。你将从根本上控制会发生的任何事情。如果你足够优秀，你可以成为一个神，在小规模的范围内。</p>
+<p>我这么说可能粗鄙地冒犯了地球上将近一半的人口。</p>
+<p>但是这是事实。你可以创造你自己的世界，唯一可以限制你的就是计算机的性能，以及创造世界这些天来，你自己的能力。</p>
+<p>假想我们要做一个树屋。你可以建造一个功能齐全、具有活板门并且稳定的树屋。但是每个人都知道建造简单扎实树屋和漂亮的树屋之间区别，这取决于在一棵树上花费的创造效果。是一件混合着艺术和工程文化的事。这是编程如此动人有趣的原因之一。功能实现次于更加有趣，更加漂亮或者更加令人震惊。</p>
+<p>这是一种创造性的练习。</p>
+<p>吸引我喜欢上编程的第一个地方就是搞清楚计算机是如何运行的。其中最大的满足感之一是学习计算机想学习数学一样：你用你自己的规则建造自己的世界。在物理学中，你被限制只能用现有的规则。但是在数学中，像编程一样，如果形成自洽的话，任何事情都有有可能发生。数学不需要被任何额外的逻辑所限制，但是它本身必须是合乎逻辑的。正如所有数学家所知道的一样，你确实可以有一组数学方程式让其中的 3 + 3 = 2 。你可以做任何你想做的是，事实上，当你给你创造的世界增加复杂度的时候，必须小心，不要创造一些前后矛盾的事物出来。创造出来的世界是如此美丽，容不得一丝瑕疵。这就是编程的工作原理。</p>
+<p>人们对电脑如此着迷的原因之一，就是能从中获得自己创造一个新世界的体验，并能从中了解到它到底能够成为什么样子。在数学中，你可以使用内心来想象新世界会变成怎样。比如， 说到几何时，大部分人想的是欧几里得几何学。但是计算机却可以帮助 人们形象化不同的几何，并不仅仅是欧几里得几何学。在计算机的帮助下，人们可以形象化这 些虚构的世界，看到那些世界到底是什么样子。还记得 Mandelbrot set 吗――基于 Benoit Mandelbrot 等式的 fractal images。要不是计算机，纯粹的数学世界绝不能这样形象地展示出来。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/WIP/"># WIP</a>
+                    
+                        <a href="/tags/Programming/"># Programming</a>
+                    
+                        <a href="/tags/%E7%BF%BB%E8%AF%91/"># 翻译</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/11/23/2018-11-23-%E5%85%B3%E4%BA%8E-http-3-%E7%9A%84%E4%B8%80%E4%BA%9B%E8%AE%B0%E5%BD%95/">关于 HTTP/3 的一些记录</a>
+            
+            
+            <a class="next" rel="next" href="/2018/10/07/2018-10-07-macos-%E5%90%AF%E5%8A%A8%E9%A1%B9%E7%AE%A1%E7%90%86/">macOS 启动项管理</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

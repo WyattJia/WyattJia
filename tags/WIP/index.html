@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>Tag: WIP | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                
+
+    
+<div class="container">
+    <div class="post-wrap tags">
+        <h2 class="post-title">-&nbsp;Tag&nbsp;·&nbsp;WIP-</h2>
+    </div>
+    <div class="post-wrap archive">
+    
+    
+        
+
+        
+            <h3>2021</h3>
+        
+
+        <article class="archive-item">
+            <a class="archive-item-link" href="/2021/05/10/2021-05-10-%E4%BD%A0%E4%BB%A5%E4%B8%BA%E7%BC%93%E5%AD%98%E8%A2%AB%E6%B8%85%E9%99%A4%E4%BA%86%EF%BC%9F%E5%85%B6%E5%AE%9E%E6%B2%A1%E6%9C%89%EF%BC%81/">你以为缓存被清除了？其实没有！</a>
+            <span class="archive-item-date">May 10, 2021</span>
+        </article>
+    
+        
+
+        
+            <h3>2020</h3>
+        
+
+        <article class="archive-item">
+            <a class="archive-item-link" href="/2020/10/09/2020-10-09-principle-of-least-expressiveness/">Principle of Least Expressiveness</a>
+            <span class="archive-item-date">October 9, 2020</span>
+        </article>
+    
+        
+
+        
+
+        <article class="archive-item">
+            <a class="archive-item-link" href="/2020/05/26/2020-05-26-aliyun-%E5%87%BD%E6%95%B0%E8%AE%A1%E7%AE%97%E8%BF%90%E8%A1%8C-golang-custom-runtime-%E7%9A%84%E9%BB%91%E9%AD%94%E6%B3%95-%E2%80%94%E2%80%94-%E4%BB%8E-goroutine-%E7%9A%84%E8%B0%83%E5%BA%A6%E8%AF%B4%E8%B5%B7/">Aliyun 函数计算运行 Golang custom runtime 的黑魔法 —— 从 Goroutine 的调度说起</a>
+            <span class="archive-item-date">May 26, 2020</span>
+        </article>
+    
+        
+
+        
+            <h3>2019</h3>
+        
+
+        <article class="archive-item">
+            <a class="archive-item-link" href="/2019/06/17/2019-06-17-nginx-%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93%E9%85%8D%E7%BD%AE%E4%BC%98%E5%8C%96/">NGINX 文件传输配置优化</a>
+            <span class="archive-item-date">June 17, 2019</span>
+        </article>
+    
+        
+
+        
+            <h3>2018</h3>
+        
+
+        <article class="archive-item">
+            <a class="archive-item-link" href="/2018/10/18/2018-10-18-%E8%AF%91-%E3%80%8Athe-beauty-of-programming-by-linus-torvalds%E3%80%8B/">译 《The beauty of Programming by Linus Torvalds》</a>
+            <span class="archive-item-date">October 18, 2018</span>
+        </article>
+    
+        
+
+        
+            <h3>2017</h3>
+        
+
+        <article class="archive-item">
+            <a class="archive-item-link" href="/2017/06/05/2017-06-05-%E5%BD%93%E6%88%91%E4%BB%AC%E7%94%A8-python-%E8%BF%90%E8%A1%8C-hello-world-%E7%9A%84%E6%97%B6%E5%80%99%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/">当我们用 Python 运行 hello world 的时候发生了什么？</a>
+            <span class="archive-item-date">June 5, 2017</span>
+        </article>
+    
+        
+
+        
+
+        <article class="archive-item">
+            <a class="archive-item-link" href="/2017/05/15/2017-05-15-%E4%BD%BF%E7%94%A8-%60ast%60-%E6%A8%A1%E5%9D%97%E8%A7%A3%E6%9E%90-python-%E4%BB%A3%E7%A0%81/">使用 `ast` 模块解析 Python 代码</a>
+            <span class="archive-item-date">May 15, 2017</span>
+        </article>
+    
+        
+
+        
+
+        <article class="archive-item">
+            <a class="archive-item-link" href="/2017/03/29/2017-03-29-%E5%A6%82%E4%BD%95%E5%9C%A8%E5%BF%AB%E9%80%9F%E6%9E%84%E5%BB%BA%E4%BA%A7%E5%93%81%E5%8E%9F%E5%9E%8B%E7%9A%84%E6%97%B6%E5%80%99%E8%BF%9B%E8%A1%8C%E5%A4%B4%E8%84%91%E9%A3%8E%E6%9A%B4/">如何在快速构建产品原型的时候进行头脑风暴</a>
+            <span class="archive-item-date">March 29, 2017</span>
+        </article>
+    
+    
+</div>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

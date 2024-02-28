@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>Python 中几个简单的任务执行器 | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Python 中几个简单的任务执行器</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="concurrent-futures-ProcessPoolExecutor"><a href="#concurrent-futures-ProcessPoolExecutor" class="headerlink" title="concurrent.futures.ProcessPoolExecutor"></a><code>concurrent.futures.ProcessPoolExecutor</code></h3><p><code>ProcessPoolExecutor</code> 属于 <a target="_blank" rel="noopener" href="https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.Executor">concurrent.futures.Executor</a> 的一个子类，它会生成一个进程池，可以被异步调用。ProcessPoolExecutor 使用了 multiprocessing 模块来实现功能。可以用来规避计算密集或者耗时任务中的 GIL 问题。进程池只能接受和返回序列化的对象。进程总数不会超过 <code>concurrent.futures.ProcessPoolExecutor(max_workers=None)</code> 参数中的 <code>max_workers</code> 值。</p>
+<p>简单的例子：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> concurrent.futures</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line">PRIMES = [</span><br><span class="line">    <span class="number">112272535095293</span>,</span><br><span class="line">    <span class="number">112582705942171</span>,</span><br><span class="line">    <span class="number">112272535095293</span>,</span><br><span class="line">    <span class="number">115280095190773</span>,</span><br><span class="line">    <span class="number">115797848077099</span>,</span><br><span class="line">    <span class="number">1099726899285419</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">is_prime</span>(<span class="params">n</span>):</span></span><br><span class="line">    <span class="keyword">if</span> n % <span class="number">2</span> == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line"></span><br><span class="line">    sqrt_n = <span class="built_in">int</span>(math.floor(math.sqrt(n)))</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>, sqrt_n + <span class="number">1</span>, <span class="number">2</span>):</span><br><span class="line">        <span class="keyword">if</span> n % i == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span>():</span></span><br><span class="line">    <span class="keyword">with</span> concurrent.futures.ProcessPoolExecutor() <span class="keyword">as</span> executor:</span><br><span class="line">        <span class="keyword">for</span> number, prime <span class="keyword">in</span> <span class="built_in">zip</span>(PRIMES, executor.<span class="built_in">map</span>(is_prime, PRIMES)):</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;%d is prime: %s&#x27;</span> % (number, prime))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<p>定义一个 <code>is_prime</code> （假装是计算密集型任务）函数判断是不是素数，给定一个数组 <code>PRIMES</code> , <code>main</code> 函数将 <code>is_prime</code> 函数和数据扔进进程池，并打印出函数结果。简单好用。</p>
+<p><code>ProcessPoolExecutor</code> 比较适合计算密集型和耗时长的任务，如果对任务执行要求高的话推荐使用更加全面的 rq 或者 celery 。</p>
+<hr>
+<h3 id="concurrent-futures-ThreadPoolExecutor"><a href="#concurrent-futures-ThreadPoolExecutor" class="headerlink" title="concurrent.futures.ThreadPoolExecutor"></a><code>concurrent.futures.ThreadPoolExecutor</code></h3><p><code>ThreadPoolExecutor</code> 与 ProcessPoolExecutor 一样，都是来自于自带的 <code>concurrent.futures</code> 包。属于 Python 自己提供的几个并发方案之一， <code>futures</code> 的意思是未完成的意思，应该指的是解决异步任务的几个方案。<br>顾名思义，与进程池不同的是 <code>ThreadPoolExecutor</code> 是线程池解决方案。他同样也是 Executor 的一个子类，因此进程池和线程池的调用方式也很类似，线程池中的最大线程数由 <code>max_worker</code> 参数指定，大部分机器的默认值是5。当一个 调用的一个 Future 对象等待另一个 Future 对象时，有可能会发生死锁。</p>
+<p>简单的例子：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> concurrent.futures</span><br><span class="line"><span class="keyword">import</span> urllib.request</span><br><span class="line"></span><br><span class="line">URLS = [<span class="string">&#x27;http://www.foxnews.com/&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;http://www.cnn.com/&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;http://europe.wsj.com/&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;http://www.bbc.co.uk/&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;http://some-made-up-domain.com/&#x27;</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># Retrieve a single page and report the URL and contents</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">load_url</span>(<span class="params">url, timeout</span>):</span></span><br><span class="line">    <span class="keyword">with</span> urllib.request.urlopen(url, timeout=timeout) <span class="keyword">as</span> conn:</span><br><span class="line">        <span class="keyword">return</span> conn.read()</span><br><span class="line"></span><br><span class="line"><span class="comment"># We can use a with statement to ensure threads are cleaned up promptly</span></span><br><span class="line"><span class="keyword">with</span> concurrent.futures.ThreadPoolExecutor(max_workers=<span class="number">5</span>) <span class="keyword">as</span> executor:</span><br><span class="line">    <span class="comment"># Start the load operations and mark each future with its URL</span></span><br><span class="line">    future_to_url = &#123;executor.submit(load_url, url, <span class="number">60</span>): url <span class="keyword">for</span> url <span class="keyword">in</span> URLS&#125;</span><br><span class="line">    <span class="keyword">for</span> future <span class="keyword">in</span> concurrent.futures.as_completed(future_to_url):</span><br><span class="line">        url = future_to_url[future]</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            data = future.result()</span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> exc:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;%r generated an exception: %s&#x27;</span> % (url, exc))</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;%r page is %d bytes&#x27;</span> % (url, <span class="built_in">len</span>(data)))</span><br></pre></td></tr></table></figure>
+
+<p>定义一个函数 <code>load_url</code> 用来载入一个网站， 给定几个网站 <code>URLS</code>, 提交函数 <code>load_url</code> 和 url 进线程池生成 future 对象作为 key ，url 作为 value ，生成字典 future_to_url ,从字典中依次取出完成的任务，并打印出任务结果。简单好用。</p>
+<p>因为线程切换的性能相对进程来说更小，所以 <code>ThreadPoolExecutor</code> 会更加适合用于 IO 密集型小任务。当然，如果对异步任务要求高的话还是推荐 rq 或者 celery 。</p>
+<hr>
+<h3 id="loop-asyncio-get-event-loop-loop-run-in-executor"><a href="#loop-asyncio-get-event-loop-loop-run-in-executor" class="headerlink" title="loop = asyncio.get_event_loop; loop.run_in_executor"></a><code>loop = asyncio.get_event_loop; loop.run_in_executor</code></h3><p><code>asyncio.get_event_loop.run_in_executor()</code> 是 asyncio 下的一个模块，但是它的执行器并不是用协程来实现的，而是通过协程在后台唤起了一个线程池或者进程池。 会在执行器中调用一个函数，可能会是在进程池也可能是线程池。默认情况下会是线程池。<code>run_in_executor()</code> 接受的参数应该是 <code>Executor</code> 实例，函数以及函数需要的参数。与线程池和进程池不同的是，<code>run_in_executor()</code> 函数不需要指定 <code>max_workers</code> 参数，它会使用系统给的默认值。</p>
+<p>简单的例子:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">from</span> urllib.request <span class="keyword">import</span> urlopen</span><br><span class="line"></span><br><span class="line"><span class="meta">@asyncio.coroutine</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_data_size</span>():</span></span><br><span class="line">   data = <span class="keyword">yield</span> <span class="keyword">from</span> get_data_size()</span><br><span class="line">   <span class="built_in">print</span>(<span class="string">&quot;Data size: &#123;&#125;&quot;</span>.<span class="built_in">format</span>(data))</span><br><span class="line"></span><br><span class="line"><span class="comment"># Note that this is a synchronous function</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sync_get_url</span>(<span class="params">url</span>):</span></span><br><span class="line">   <span class="keyword">return</span> urlopen(url).read()</span><br><span class="line"></span><br><span class="line"><span class="meta">@asyncio.coroutine</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_data_size</span>():</span></span><br><span class="line">   loop = asyncio.get_event_loop()</span><br><span class="line"></span><br><span class="line">   <span class="comment"># These each run in their own thread (in parallel)</span></span><br><span class="line">   future1 = loop.run_in_executor(<span class="literal">None</span>, sync_get_url, <span class="string">&#x27;http://baidu.com&#x27;</span>)</span><br><span class="line">   future2 = loop.run_in_executor(<span class="literal">None</span>, sync_get_url, <span class="string">&#x27;http://bitstring.xyz&#x27;</span>)</span><br><span class="line"></span><br><span class="line">   <span class="comment"># While the synchronous code above is running in other threads, the event loop</span></span><br><span class="line">   <span class="comment"># can go do other things.</span></span><br><span class="line">   data1 = <span class="keyword">yield</span> <span class="keyword">from</span> future1</span><br><span class="line">   data2 = <span class="keyword">yield</span> <span class="keyword">from</span> future2</span><br><span class="line">   <span class="keyword">return</span> <span class="built_in">len</span>(data1) + <span class="built_in">len</span>(data2)</span><br><span class="line"></span><br><span class="line">loop = asyncio.get_event_loop()</span><br><span class="line">loop.run_until_complete(print_data_size())</span><br></pre></td></tr></table></figure>
+
+<p>定义一个函数 <code>sync_get_url</code> 从 url 读取数据，定义一个异步函数 <code>get_data_size()</code> ，将 <code>sync_get_url</code> 放入线程池，并根据任务返回结果计算页面大小。定义一个异步函数 <code>print_data_size</code>，读取并打印 <code>get_data_size()</code> 的结果。 定义一个 asyncio 任务队列，将 <code>print_data_size</code> 放入协程队列，依次将已完成的 <code>print_data_size()</code> 函数取出。简单好用。</p>
+<p>协程比线程更轻量，更适合于 IO 密集任务。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Python/"># Python</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/12/28/2017-12-28-%E5%9C%A8-python-%E4%B8%AD%E5%A6%82%E4%BD%95%E5%AE%9A%E4%B9%89%E5%8A%A8%E6%80%81%E6%96%B9%E6%B3%95%E5%92%8C%E7%A6%81%E6%AD%A2%E5%AE%9A%E4%B9%89%E5%8A%A8%E6%80%81%E6%96%B9%E6%B3%95/">在 Python 中如何定义动态方法和禁止定义动态方法</a>
+            
+            
+            <a class="next" rel="next" href="/2017/11/11/2017-11-11-the-joel-test-and-joel-test-2017/">The Joel Test and Joel Test 2017</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

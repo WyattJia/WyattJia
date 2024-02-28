@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>Use gcr.io and minikube in China. | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Use gcr.io and minikube in China.</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>As you know, <code>gcr.io</code> is blocked in China.Here is a solution to reslove this problem.</p>
+<p>Summarize how to fix it</p>
+<ul>
+<li>Option 1:<br> download the images from gcr.io and other docker registry one by one manually.</li>
+<li>Option 2:<br> setup shadowsocks and at shadowsock client, you need to enable it to allow other device connect to it.<br>then</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube start --docker-env HTTP_PROXY=http://&lt;your local network ip&gt;:&lt;ss proxy port&gt; --docker-env HTTPS_PROXY=https://&lt;your local network ip&gt;:&lt;ss proxy port&gt;</span><br></pre></td></tr></table></figure>
+
+<p>and</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export no_proxy=$no_proxy,$(minikube ip)</span><br><span class="line">Now you need to wait to see all images are downloaded successfully.</span><br><span class="line">minikube ssh -- docker images</span><br><span class="line">output like below but the images vary as you use different version of minikube.</span><br></pre></td></tr></table></figure>
+
+<p>then</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> minikube ssh -- docker images</span></span><br><span class="line">REPOSITORY TAG IMAGE ID CREATED SIZE</span><br><span class="line">k8s.gcr.io/kubernetes-dashboard-amd64 v1.8.1 e94d2f21bc0c 5 months ago 121MB</span><br><span class="line">gcr.io/google-containers/kube-addon-manager v6.5 d166ffa9201a 6 months ago 79.5MB</span><br><span class="line">gcr.io/k8s-minikube/storage-provisioner v1.8.1 4689081edb10 7 months ago 80.8MB</span><br><span class="line">k8s.gcr.io/k8s-dns-sidecar-amd64 1.14.5 fed89e8b4248 8 months ago 41.8MB</span><br><span class="line">k8s.gcr.io/k8s-dns-kube-dns-amd64 1.14.5 512cd7425a73 8 months ago 49.4MB</span><br><span class="line">k8s.gcr.io/k8s-dns-dnsmasq-nanny-amd64 1.14.5 459944ce8cc4 8 months ago 41.4MB</span><br><span class="line">wardviaene/k8s-demo 2 a589ef0d2b4e 19 months ago 651MB</span><br><span class="line">gcr.io/google_containers/pause-amd64 3.0 99e59f495ffa 2 years ago 747kB</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>By the way , I have one more solution.We can use Docker hub <code>autobuild</code> with Github Integrate. You can read my <a target="_blank" rel="noopener" href="https://github.com/wellls/kube-apiserver-amd64">kube-apiserver-amd64</a> and <a target="_blank" rel="noopener" href="https://docs.docker.com/docker-hub/builds/">Docker Hub Docs</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Infrastructure/"># Infrastructure</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/10/07/2018-10-07-macos-%E5%90%AF%E5%8A%A8%E9%A1%B9%E7%AE%A1%E7%90%86/">macOS 启动项管理</a>
+            
+            
+            <a class="next" rel="next" href="/2018/09/08/2018-09-08-getting-started-with-istio-and-run-istio-on-your-laptop./">Getting Started with Istio and run Istio on your laptop.</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

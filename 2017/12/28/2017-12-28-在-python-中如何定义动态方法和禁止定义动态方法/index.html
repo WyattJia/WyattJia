@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>在 Python 中如何定义动态方法和禁止定义动态方法 | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">在 Python 中如何定义动态方法和禁止定义动态方法</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>这两天在研究 &lt;Ruby 元编程&gt; ，发现 Ruby 有一个很神奇的特性，就是可以在运行时定义方法，这种技术被成为<strong>动态方法</strong>(Dynamic Method)。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span></span></span><br><span class="line">    define_method <span class="symbol">:my_method</span> <span class="keyword">do</span> <span class="params">|my_arg|</span></span><br><span class="line">        my_arg * <span class="number">3</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">obj = MyClass.new</span><br><span class="line">print obj.my_method(<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+<p><code>MyClass</code> Module 中的 <code>define_method()</code> 方法随时可以定义一个方法，只要为其提供方法名，方法参数和方法代码块即可。示例中的 <code>my_method</code> 方法就是被定义为 <code>MyClass</code> 的一个实例方法。<br><strong>动态方法</strong>在抽象类的过程中可以非常显著地减少重复代码量，在动态语言中是一个很有用的特性。同样作为一款非常精致的动态语言，Python 也有创建<strong>动态方法</strong>的方案，那么如何创建呢？我们先来看一个非常简单的例子：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyObj</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, val</span>):</span></span><br><span class="line">        self.val = val</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">new_method</span>(<span class="params">self, value</span>):</span></span><br><span class="line">    <span class="keyword">return</span> self.val + value</span><br><span class="line"></span><br><span class="line">obj = MyObj(<span class="number">3</span>)</span><br><span class="line">obj.method = new_method</span><br></pre></td></tr></table></figure>
+
+<p>上面的例子中我们像 Ruby 中一样，直接为实例对象赋值一个新函数，企图将新函数定义为实例对象的一个方法类。看上去很优雅，但是实际操作的时候，我们会发现这代码根本运行不了。它会返回一段错误信息。显然是没有成功定义类方法。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>obj.method(<span class="number">5</span>)</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File <span class="string">&quot;&lt;stdin&gt;&quot;</span>, line <span class="number">1</span>, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">TypeError: new_method() takes exactly <span class="number">2</span> arguments (<span class="number">1</span> given)</span><br></pre></td></tr></table></figure>
+
+<p>Google 一番之后，我发现利用 <code>builtin</code> 中的 <code>types.MethodType</code> 模块可以定义<strong>动态方法</strong>。我们再看一个例子：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> types <span class="keyword">import</span> MethodType</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyObj</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, val</span>):</span></span><br><span class="line">        self.val = val</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">new_method</span>(<span class="params">self, value</span>):</span></span><br><span class="line">    <span class="keyword">return</span> self.val + value</span><br><span class="line"></span><br><span class="line">obj = MyObj(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line">obj.method = MethodType(new_method, obj, MyObj)</span><br><span class="line"><span class="built_in">print</span>(obj.method(<span class="number">5</span>))         <span class="comment"># return 8</span></span><br></pre></td></tr></table></figure>
+
+<p>Worked! 我们通过 <code>MethodType</code> 模块成功为实例对象 <code>obj</code> 定义了一个类方法！<br>然而我们尝试重新定义一个对象再去调用 <code>method</code> 方法之后却失败了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>obj2 = MyObj(<span class="number">2</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>obj2.method(<span class="number">5</span>)</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File <span class="string">&quot;&lt;stdin&gt;&quot;</span>, line <span class="number">1</span>, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">AttributeError: <span class="string">&#x27;MyObj&#x27;</span> <span class="built_in">object</span> has no attribute <span class="string">&#x27;method&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>错误提示没有 <code>method</code> 这个方法。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>MyObj.method = MethodType(new_method, <span class="literal">None</span>, MyObj)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>MyObj.method</span><br><span class="line">&lt;unbound method MyObj.new_method&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>obj2 = MyObj(<span class="number">2</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>obj2.method(<span class="number">5</span>)</span><br><span class="line"><span class="number">7</span></span><br></pre></td></tr></table></figure>
+
+<p>重新再用 <code>MethodType</code> 定义一番之后又可以了，显然 <code>MethodType</code> 只是针对实例对象的，基本上就是 Ruby 的 <code>singleton method</code> 。 动态方法属于元编程的一种技巧，在 Python 中其实很少用到。</p>
+<hr>
+<hr>
+<blockquote>
+<p>扩展阅读:</p>
+</blockquote>
+<p>使用 <code>__slots__</code> 魔术方法限制增加动态方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> types <span class="keyword">import</span> MethodType</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line"></span><br><span class="line">    __slots__ = (<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;age&#x27;</span>, <span class="string">&#x27;country&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, name, age</span>):</span></span><br><span class="line">        self.age = age</span><br><span class="line">        self.name = name</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">set_country</span>(<span class="params">self, country</span>):</span></span><br><span class="line">    self.country = country</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    s = Student(<span class="string">&#x27;a&#x27;</span>, <span class="number">9</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">dir</span>(s))</span><br><span class="line"></span><br><span class="line">    s.set_country = MethodType(set_country, s)</span><br><span class="line">    s.set_country(<span class="string">&#x27;china&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(s.country)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> result</span></span><br><span class="line">[&#x27;__class__&#x27;, &#x27;__delattr__&#x27;, &#x27;__dir__&#x27;, &#x27;__doc__&#x27;, &#x27;__eq__&#x27;, &#x27;__format__&#x27;, &#x27;__ge__&#x27;, &#x27;__getattribute__&#x27;, &#x27;__gt__&#x27;, &#x27;__hash__&#x27;, &#x27;__init__&#x27;, &#x27;__init_subclass__&#x27;, &#x27;__le__&#x27;, &#x27;__lt__&#x27;, &#x27;__module__&#x27;, &#x27;__ne__&#x27;, &#x27;__new__&#x27;, &#x27;__reduce__&#x27;, &#x27;__reduce_ex__&#x27;, &#x27;__repr__&#x27;, &#x27;__setattr__&#x27;, &#x27;__sizeof__&#x27;, &#x27;__slots__&#x27;, &#x27;__str__&#x27;, &#x27;__subclasshook__&#x27;, &#x27;age&#x27;, &#x27;country&#x27;, &#x27;name&#x27;]</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;test_slot2.py&quot;, line 19, in &lt;module&gt;</span><br><span class="line">    s.set_country = MethodType(set_country, s)</span><br><span class="line">AttributeError: &#x27;Student&#x27; object has no attribute &#x27;set_country&#x27;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<hr>
+<p>下面还有 JavaScript 版本：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">define_method</span> (<span class="params">target, name, code</span>) </span>&#123;</span><br><span class="line">    target[name] = <span class="keyword">new</span> <span class="built_in">Function</span>(code);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Python/"># Python</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/01/08/2018-01-08-wtfpl-%E2%80%93-do-what-the-fuck-you-want-to-public-license/">WTFPL – Do What the Fuck You Want to Public License</a>
+            
+            
+            <a class="next" rel="next" href="/2017/12/10/2017-12-10-python-%E4%B8%AD%E5%87%A0%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C%E5%99%A8/">Python 中几个简单的任务执行器</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

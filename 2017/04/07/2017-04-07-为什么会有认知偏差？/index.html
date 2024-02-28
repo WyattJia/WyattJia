@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>为什么会有认知偏差？ | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">为什么会有认知偏差？</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <ul>
+<li>将维基百科上的 list of cognitive biases 归为四大类，为何人会有认知偏误？<ol>
+<li>信息过载，人脑要对信息过滤，但留住了不好的信息；</li>
+<li>信息模糊模棱两可，人脑要填补空白、要弄明白，却填了错的东西进去；</li>
+<li>需要尽快做决策，时间不够、信息不够情况下仓促做决定；</li>
+<li>选择性地记住了错的东西。</li>
+</ol>
+</li>
+</ul>
+<p>花了很多年时间参考维基百科的认知偏见清单，只要我有一种希望，某种类型的思维是官方的偏见，但我不记得名字或细节。 帮助我识别我自己思考中隐藏的缺陷，这是非常宝贵的参考。 我所遇到的其他事情似乎都是全面而简洁的。<br>但是，老实说，维基百科页面有点混乱。 尽管多年来多次尝试吸收这个网页的信息，但很少有人似乎坚持下去。 我经常扫描它，觉得我无法找到我正在寻找的偏见，然后快速忘记我所学到的东西。 我认为这与多年来网页的发展有关。 今天，它将175个偏见组合成不真实地感觉到与我相互排斥的模糊类别（决策偏见，社会偏见，记忆错误等），然后按类别列出它们的字母顺序。 有很多重复的东西，和许多类似的偏差，不同的名字，分散的寒冷。<br>过去四周，我已经花了一些时间（我在陪产假）试图更深入地吸收和理解这个清单，并尝试提出一个更简单，更清晰的组织结构来摆脱这些偏见。 深入了解各种偏见，让我的大脑有一些东西要咀嚼，而我反弹小路易睡觉。<br>我从175个偏见的原始列表开始，并将它们全部添加到电子表格中，然后再次通过删除重复项，并将类似的偏差（如奇异效应和幽默效果）或互补偏差（如乐观偏见和悲观偏见）组合起来。 该列表下降到大约20种独特的偏见的心理策略，我们用于非常具体的原因。<br>我做了几次不同的尝试，试图将这20个左右的组合分组在更高的层次上，最终由他们正在尝试解决的一般心理问题进行分组。 每一个认知偏见都有一个原因 - 主要是为了节省我们的大脑时间或精力。 如果您通过他们想要解决的问题来看待他们，那么了解它们所存在的原因，它们的有用性以及它们引入的权衡（以及由此导致的精神错误）变得容易得多。<br>偏倚的四个问题有助于我们解决：<br>信息过载，缺乏意义，需要快速行动，以及如何知道需要记住的时间。<br>问题1：信息太多。<br>世界上只有太多的信息，我们别无选择，只能过滤几乎所有的信息。 我们的大脑使用一些简单的技巧来选择最有可能以某种方式有用的信息。<br>我们注意到已经在记忆中或经常重复的事情。 这是一个简单的规则，我们的大脑更有可能注意到最近在内存中加载的东西相关的东西。<br>看到： 可用性启发式 ， 注意偏见 ， 虚幻真相效应 ， 仅仅暴露效应 ， 上下文效应，提示依赖遗忘，心情一致的记忆偏差 ， 频率错觉，Baader-Meinhof现象 ， 同理心的差距 ， 省略偏差 ， 基本谬误<br>奇怪/有趣/视觉醒目/拟人化的东西比非奇异/不自在的东西更突出。 我们的大脑倾向于提高不寻常或令人惊讶的事物的重要性。 或者，我们倾向于跳过我们认为是普通或预期的信息。<br>见： 奇异效应，幽默效应 ， Von Restorff效应 ， 图像优势效应 ， 自相关效应 ， 消极偏倚<br>我们注意到什么事情发生了变化。 我们通常会倾向于通过变革发生的方向（正面或负面）来衡量新价值的重要性，而不仅仅是重新评估新价值，就像单独呈现一样。 当我们比较两个类似的东西时也适用。<br>参见： 锚定，对比效应，聚焦效应 ， 金钱幻觉 ， 构 框效应 ， 韦伯 - 费希尔 定律 ， 保守主义 ， 区分偏见<br>我们得到了确认我们自己现有信念的细节。 这是一个大的。 同样的结论：我们倾向于忽略与我们自己的信仰相矛盾的细节。<br>见： 确认偏差 ， 一致偏差 ， 购买后合理化，选择支持偏好 ， 选择性感知 ， 观察者期望效应，实验者偏差，观察者效应，期望偏差 ， 鸵鸟效应 ， 主观验证 ， 持续影响效应 ， Semmelweis反射<br>我们发现别人的瑕疵比我们自己的缺点更容易。 是的，在你将整篇文章看作是折中别人的想法的怪癖列表之前，意识到你也受到这些偏见的影响。<br>看到： 偏见盲点 ， 天真的玩世不恭 ， 朴素的现实主义<br>问题二：意义不足<br>世界很混乱，我们最终只能看到一小块，但是为了生存，我们需要有一些感觉。 一旦减少信息流进来，我们连接点，填补我们已经认为我们所知道的东西，并更新我们的世界心理模型。<br>即使是稀疏的数据，我们也找到故事和模式。 既然我们只得到了世界上一小部分的信息，而且几乎把所有的东西都过滤出来，我们从来没有这个完整故事的奢侈品。 这就是我们的大脑重建世界，感受到我们头脑中的完整。<br>参见： 混淆 ， 聚集错觉 ， 对样本量 的不敏感 ， 忽略概率 ， 轶事谬误 ， 有效性幻觉 ， 蒙面人的谬误 ， 再犯 错觉 ， 赌徒的谬误 ， 热手的谬误 ， 虚幻的相关性 ， Pareidolia ， 拟人<br>每当有新的具体情况或信息差距时，我们都会从刻板印象，一般性和以前的历史中填写特征。 当我们有一些属于我们非常熟悉的一组事物的特定事物的部分信息时，我们的大脑没有问题填补空白，最好的猜测或其他信任的来源提供。 方便的是，我们会忘记哪些部分是真实的，哪些是填充的。<br>请参阅： 群组归因错误 ， 终极归因错误 ， 定型观念 ， 基本主义 ， 功能固定性 ， 道德信誉效应 ， 正义世界假说 ， 谬论论证 ， 权威偏差 ， 自动偏倚 ， Bandwagon效应 ， 安慰剂效应<br>我们想象我们熟悉或喜欢的事物和人，比我们不熟悉或喜欢的事物和人物更好。 与上述类似，但填充位通常还包括关于我们正在查看的东西的质量和价值的内置假设。<br>参见： 光晕效应 ， 组内偏差 ， 组外同质性偏差 ， 跨种族效应 ， 啦啦啦效应 ， 行走道路效应 ， 此处未发明 ， 反应性贬值 ， 积极效应<br>我们简化概率和数字，使其更容易思考。 我们的潜意识在数学上是可怕的，一般来说，如果有任何数据丢失，可能会发生事情的错误。<br>见： 心理会计 ， 正常偏见 ， 上诉到概率谬误 ， 墨菲定律 ， 次附加效应 ， 生存偏见 ， 零和偏差 ， 面额效应 ， 魔法数7 + -2<br>我们认为我们知道别人在想什么。 在某些情况下，这意味着我们假设他们知道我们所知道的，在其他情况下，我们假设他们正在考虑我们，正如我们正在考虑的一样。 基本上只是我们自己建立自己心灵的一个例子（或者在某些情况下，比自己的心灵要复杂得多）。<br>参见：知识诅咒，透明度 幻影 ， 聚光灯效应 ， 外部机构 幻觉，不对称洞察幻觉 ， 外在激励错误<br>我们将目前的观念和假设投射到过去和未来。 放大倍数也是因为我们不太在意想象物体会如何快速或慢慢地发生或随着时间的推移而变化。<br>参见：后瞻性偏见 ， 结果偏见 ， 道德运气 ， 衰退 ， 伸缩效应 ， 玫瑰回顾 ， 影响偏见 ， 悲观偏见 ， 规划谬误 ， 时间偏差 ， 创新偏见 ， 投影偏见 ， 约束偏见 ， 自我一致偏见<br>问题3：需要快速行动。<br>我们受到时间和信息的限制，但我们不能让我们瘫痪。 没有能力在面对不确定的情况下快速采取行动，我们肯定会像很久以前一样灭亡。 每一个新的信息，我们需要尽最大的努力来评估我们影响情况的能力，将其应用于决策，模拟未来预测下一步可能发生的事情，否则采取行动对我们的新见解。<br>为了采取行动，我们需要对自己的能力产生影响，并且觉得我们所做的工作非常重要。 实际上，大多数信心可以归类为过度自信，但如果没有这种信心，我们可能根本不会采取行动。<br>参见： 过度自信效应 ， 中心偏见 ， 乐观偏见 ， 社会需求偏见 ， 第三人称效应 ， 前兆效应，巴纳姆效应 ， 控制幻觉 ， 虚假共识效应 ， Dunning-Kruger效应 ， 难易 效应 ， 虚幻优势 ， Wobegone湖效应 ， 自我偏见 ， 观察者偏见，基本归因误差 ， 防御归因假设 ， 特征归因偏差 ， 努力理由 ， 风险补偿，Peltzman效应<br>为了保持专注，我们倾向于延迟和遥远的我们面前的直接的，相关的事情。 我们在现在比以后更重视的东西，更多地涉及具体个人的故事，而不是匿名的个人或团体。 我感到惊讶的是，在这一点上没有更多的偏见，考虑到它对我们对世界的看法有多大影响。<br>见： 双曲折扣 ， 上诉新奇 ， 识别受害者效应<br>为了做任何事情，我们有动力完成我们已经投入时间和精力的事情。行为经济学家的牛顿第一运动规律：一个运动中的物体停留在运动中。 这有助于我们完成任务，即使我们遇到越来越多的理由放弃。<br>参见： 沉没成本谬误 ， 非理性升级，承诺升级 ， 亏损厌恶 ， 宜家效应，加工难度影响 ， 生成效应 ， 零风险偏倚 ， 处置效应 ， 单位偏差 ， 假性效应 ， 禀赋效应 ， 反 火效应<br>为了避免错误，我们有动力维护一个群体的自主权和地位，并避免不可逆转的决定。 如果我们必须选择，我们倾向于选择被认为是风险最小或保留现状的选项。 比你所不知道的魔鬼更好，<br>见： 系统理由， 反应 ， 反向心理学 ， 诱惑 效应 ， 社会比较偏见 ， 现状偏见<br>我们喜欢看起来很简单的选项，或者更复杂，模糊的选项有更完整的信息。 我们宁愿做一件简单的事情，而不是重要的复杂事情，即使重要的复杂事情最终能够更好地利用时间和精力。<br>参见： 歧义偏见 ， 信息偏见 ， 信仰偏见 ， 韵律作为理性效应 ， 自行车脱落效应，琐碎定律，德尔莫 效应 ， 连接谬误 ， 奥卡姆剃须刀 ， 效果 不佳<br>问题4：我们应该记住什么？<br>宇宙中有太多的信息。 我们只能保持在未来最有可能证明有用的位。 我们需要围绕着我们想要记住的东西和我们忘记的事情做出不断的赌注和权衡。 例如，我们更喜欢对细节进行泛化，因为它们占用较少的空间。 当有很多不可缩减的细节时，我们会选出一些脱颖而出的物品来保存和丢弃其余的物品。 我们在这里保存的是最有可能通知我们的过滤器与问题1的信息过载相关，以及告知在问题2中提到的过程中注意到填写不完整信息时的内容。 这一切都是自强不息的。<br>事实之后，我们编辑和强化了一些回忆。 在这个过程中，记忆可以变得更强大，但是各种细节也可能被意外交换。 我们有时不小心将细节注入到以前不存在的记忆中。<br>请参阅： 错误的记忆，来源混乱 ， 隐喻 ， 虚假记忆 ， 建议性 ， 间距效应<br>我们舍弃细节来形成一般性。 我们这样做是不必要的，但隐含的联系，陈规定型观念和偏见的影响导致了我们全套认知偏差中最显着的不良后果。<br>见： 隐性关联，隐性刻板印象，定型偏见 ， 偏见 ， 消极偏倚 ， 褪色影响偏见<br>我们将事件和列表减少到其关键要素。 很难将事件和列表减少为一般性，所以我们选择一些代表整体的项目。<br>请参阅： 峰值规则 ， 调平和锐化 ， 误信号效应 ， 持续时间忽略 ， 串行回调效应，列表长度效应 ， 模态效应 ， 记忆抑制，部分列表提示效果 ， 初始 效果 ， 逼近 效应 ， 串行位置效果 ， 后缀效应<br>我们根据他们的经验不同地存储回忆。 我们的大脑只会对当时认为重要的信息进行编码，但是这个决定可能会受到其他情况的影响（还有什么发生，信息呈现本身，如果需要，我们可以再次轻松找到信息）这与信息的价值无关。<br>请参阅： 处理效果等级 ， 测试效果 ， 缺席意识 ， 下一效果 ， 舌尖现象 ， Google效果<br>太好了，我该怎么记得这一切？<br>你不必。 但是，您可以先记住这四个巨大的问题，我们的大脑在过去几百年里已经发展成为处理（如果你想偶尔参考这个页面，你要寻找的确切偏差）<br>信息过载吸引，所以我们积极地过滤。 噪声变成信号。<br>缺乏意义令人困惑，所以我们填补了空白。 信号变成了一个故事。<br>需要快速行动，以免失去机会，所以我们得出结论。 故事成为决定。<br>这并不容易，所以我们尝试记住重要的一点。 决定告诉我们的世界心理模型。<br>为了避免淹没在信息超载中 ，我们的大脑需要快速，快速地去掉和过滤疯狂的信息，几乎毫不费力地决定那个小火柴中的哪些东西实际上是重要的，并且把它们称之为重要。<br>为了从我们注意的一些信息中构建意义，我们需要填补空白，将其全部映射到现有的心理模型。 在此期间，我们还需要确保它们都保持相对稳定和尽可能准确。<br>为了快速行动 ，我们的大脑需要做出分裂决定，这些决定可能会影响我们的生存，安全或成功的机会，并且有信心我们可以使事情发生。<br>为了尽可能高效地进行所有这些工作，我们的大脑需要记住最重要和最有用的新信息，并通知其他系统，以便随着时间的推移可以适应和改进，但不能超越。<br>听起来很有用！ 那有什么缺点呢？<br>除了这四个问题之外，记住这四个关于我们如何解决这些问题的问题有自己的问题是有益的：<br>我们看不到一切 我们筛选出的一些信息实际上是有用和重要的。<br>我们寻求意义可以引起幻想。 我们有时会想象我们的假设所填充的细节，并且构造出不是真正存在的意义和故事。<br>快速的决定可能是严重的缺陷。 我们跳过的一些快速反应和决定是不公平，自我服务和反作用的。<br>我们的记忆增强了错误。 我们以后记得的一些东西只是使所有上述系统更加有偏见，对我们的思维过程更加有害。<br>通过保持世界的四个问题和我们大脑的策略来解决它们的四个后果， 可用性启发式 （特别是Baader-Meinhof现象 ）将确保我们更频繁地注意到我们自己的偏见。 如果你访问这个页面，每隔一段时间刷新你的头脑， 间距效果将有助于强调一些这些思维模式，使我们的偏见盲点 和天真的现实主义 被保留。<br>我们没有做任何事情可以使4个问题消失（直到我们有办法扩大我们的思想的计算能力和存储空间来匹配宇宙），但是如果我们接受我们永远的偏见，但是还有改进的余地， 确认偏见将继续帮助我们找到支持这一点的证据，这将最终导致我们更好地了解自己。<br>“从学习确认偏见以来，我一直在看到它！<br>认知偏见只是在正确的环境中有用的工具，在其他环境中是有害的。 他们是我们唯一的工具，他们甚至相当擅长做什么。 我们也可以熟悉他们，甚至认识到我们至少有能力用我们神秘的大脑处理宇宙。<br>更新：发布后的几天， John Manoogian III询问是否可以做一个“图形海报混搭”，我当然说是的。 这是他想出来的：</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/04/23/2017-04-23-linux-%E4%B8%8B%E6%9F%A5%E7%9C%8B%E7%BD%91%E7%BB%9C%E7%8A%B6%E6%80%81%E7%9A%84%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E2%80%94%E2%80%94-netstat/">Linux 下查看网络状态的常用命令 —— netstat</a>
+            
+            
+            <a class="next" rel="next" href="/2017/03/30/2017-03-30-%E9%A3%8E/">风</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>从 Redis 的 ae 模块学习 I/O 多路复用 | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">从 Redis 的 ae 模块学习 I/O 多路复用</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>Redis 拥有它自己的事件驱动模块，叫做 <a target="_blank" rel="noopener" href="https://github.com/antirez/redis/blob/unstable/src/ae.c">ae.c</a> 。想要理解 Redis 的事件模块最好的办法是弄懂 Redis 是如何调用这个模块的。</p>
+<p>以 <code>epoll</code> 为例，从 Event Loop Initialization 说起。</p>
+<p>redis 的 <code>initServer</code> 函数初始化了很多 redis 服务器的 struct 。其中一个 struct 叫做 <code>aeEventLoop *el</code> , 定义在 <code>ae.h</code> 文件中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* State of an event based program */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">aeEventLoop</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> maxfd;   <span class="comment">/* highest file descriptor currently          registered */</span></span><br><span class="line">    <span class="keyword">int</span> setsize; <span class="comment">/* 最多能监听的文件描述法个数 */</span></span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> timeEventNextId;</span><br><span class="line">    <span class="keyword">time_t</span> lastTime;     <span class="comment">/* Used to detect system clock        skew */</span></span><br><span class="line">    aeFileEvent *events; <span class="comment">/* Registered events                  文件事件的数组 */</span></span><br><span class="line">    aeFiredEvent *fired; <span class="comment">/* Fired events */</span></span><br><span class="line">    aeTimeEvent *timeEventHead;</span><br><span class="line">    <span class="keyword">int</span> stop;</span><br><span class="line">    <span class="keyword">void</span> *apidata; <span class="comment">/* This is used for polling API specific    data */</span></span><br><span class="line">    aeBeforeSleepProc *beforesleep;</span><br><span class="line">    aeBeforeSleepProc *aftersleep;</span><br><span class="line">&#125; aeEventLoop;</span><br></pre></td></tr></table></figure>
+
+<p>通过调用 <code>ae.c</code> 文件中的 <code>aeCreateEventLoop</code> 函数，<code>initServer</code> 定义了 <code>server.el</code> 值。<br> <code>aeCreateEventLoop</code> 先用 <code>malloc</code> 函数给 <code>aeEventLoop</code> 分配了内存，然后调用了 <code>ae_epoll.c</code> 文件中的 <code>aeApiCreate</code> 函数。<code>aeApiCreate</code> 函数给 <code>aeApiState</code> struct 分配相应的内存。<br><code>aeApiState</code> 有两个成员，分别是:</p>
+<ul>
+<li><code>epfd</code>: 用来存储通过 <code>epoll</code> 触发生成的文件描述符。文件描述符通过调用 Linux kernel 的 <code>epoll_create</code> 函数生成。</li>
+<li><code>epoll_event</code>: 成员 <code>epoll_event</code> 通过 linux kernel 中的 epoll 定义。</li>
+</ul>
+<blockquote>
+<p><code>aeCreateTimeEvent</code></p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aeCreateTimeEvent(server.el <span class="comment">/*eventLoop*/</span>, <span class="number">1</span> <span class="comment">/*milliseconds*/</span>, serverCron <span class="comment">/*proc*/</span>, <span class="literal">NULL</span> <span class="comment">/*clientData*/</span>, <span class="literal">NULL</span> <span class="comment">/*finalizerProc*/</span>);</span><br></pre></td></tr></table></figure>
+
+<p>新建定时事件通过调用 <code>ae.c</code> 文件中的 <code>aeCreateTimeEvent</code> 来实现。在我们初始化服务器之前，先需要调用 <code>anet.c</code> 文件中的 <code>anetTcpServer</code> 函数来新建并监听 socket 连接， socket 连接的默认端口是6379，socket 的文件描述符将会在 <code>server.fd</code> 成员中存储。</p>
+<p><code>aeCreateTimeEvent</code> 函数接受的参数包括以下几个:</p>
+<ul>
+<li><code>eventLoop</code></li>
+<li><code>milliseconds</code>: 存储定时器有效毫秒时间</li>
+<li><code>proc</code>: 函数指针，存储定时器到期后需要调用的函数的地址。</li>
+<li><code>clientData</code>: 常常为空</li>
+<li><code>finalizerProc</code>: 指向定时事件从定时事件列表中被删除之前必须被调用的函数的地址。</li>
+</ul>
+<p><code>initServer</code> 调用 <code>aeCreateTimeEvent</code> 来新建定时事件到 <code>timeEventHead</code> 成员中，<code>timeEventHead</code> 是 <code>aeEventLoop</code> 的成员变量，初始化服务后存储在 <code>server.el</code> 中。<code>timeEventHead</code> 指向一系列定时事件的地址。</p>
+<p>接下来的内容是：</p>
+<blockquote>
+<p><code>aeCreateFileEvent</code><br><code>Event Loop Processing</code><br><code>processTimeEvents</code></p>
+</blockquote>
+<p>以后有空再更…</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Operating-System/"># Operating System</a>
+                    
+                        <a href="/tags/Infrastructure/"># Infrastructure</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/06/09/2017-06-09-open-the-flask-%E2%80%94%E2%80%94-flask-%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0./">Open the Flask —— Flask 源码阅读笔记.</a>
+            
+            
+            <a class="next" rel="next" href="/2017/06/05/2017-06-05-%E5%BD%93%E6%88%91%E4%BB%AC%E7%94%A8-python-%E8%BF%90%E8%A1%8C-hello-world-%E7%9A%84%E6%97%B6%E5%80%99%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/">当我们用 Python 运行 hello world 的时候发生了什么？</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>NGINX 文件传输配置优化 | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">NGINX 文件传输配置优化</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id=""><a href="#" class="headerlink" title=""></a></h2><h3 id="sendfile-on"><a href="#sendfile-on" class="headerlink" title="sendfile on"></a><code>sendfile on</code></h3><ul>
+<li><p><code>sendfile     on | off;</code> </p>
+<pre><code> * 开启高效文件传输模式
+ * 放置位置 `http` `server`     `location` `if in location`
+</code></pre>
+</li>
+<li><p><code>tcp_nopush      on | off;</code> </p>
+<ul>
+<li>有数据的时候，先不着急发送，确认数据包装满数据再发送，避免网络阻塞。仅开启 <code>sendfile on</code> 时有效。</li>
+<li>放置位置 <code>http</code> <code>server</code> <code>location</code></li>
+<li>内部作用: 激活或者禁用 Linux 上 <code>TCP_CORK </code> socket 选项，该选项的作用是接收到数据包之后不会马上传出去，等到数据包最大时再传送，可以减少网络报文段的数量</li>
+</ul>
+</li>
+<li><p><code>tcp_nodelay        on | off;</code>  </p>
+<pre><code>* 有数据时要尽快发送，提高数据传输效率
+* 放置位置 `http` `server` `location`
+* 作用：激活或禁用 `TCP_NODELAY` 选项，只有在连接进入 `keep-alive` 状态时生效。`TCP_NODELAY` 和 上面提到的 `TCP_CORK` 控制了数据包中的 `Nagle` 化，目的是采用 `Nagle` 算法将较小的包组装为更大的帧，以减少网络阻塞。
+</code></pre>
+</li>
+</ul>
+<p><strong>sendfile on</strong> 通常配合上面的 2, 3选项使用，但是两者之中只能选一个生效。</p>
+<ul>
+<li>example:  <figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">worker_processes</span>  <span class="number">2</span>;</span><br><span class="line"><span class="attribute">worker_cpu_affinity</span> <span class="number">0101</span> <span class="number">1010</span>;</span><br><span class="line"><span class="attribute">error_log</span> logs/error.log;</span><br><span class="line"></span><br><span class="line"><span class="comment">#配置Nginx worker进程最大打开文件数</span></span><br><span class="line"><span class="attribute">worker_rlimit_nofile</span> <span class="number">65535</span>;</span><br><span class="line"></span><br><span class="line"><span class="attribute">user</span> www www;</span><br><span class="line"><span class="section">events</span> &#123;</span><br><span class="line"><span class="comment">#单个进程允许的客户端最大连接数</span></span><br><span class="line"><span class="attribute">worker_connections</span>  <span class="number">20480</span>;</span><br><span class="line"><span class="comment">#使用epoll模型</span></span><br><span class="line"><span class="attribute">use</span> <span class="literal">epoll</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="section">http</span> &#123;</span><br><span class="line"><span class="attribute">include</span>       mime.types;</span><br><span class="line"><span class="attribute">default_type</span>  application/octet-stream;</span><br><span class="line"><span class="comment">#sendfile        on;</span></span><br><span class="line"><span class="attribute">keepalive_timeout</span>  <span class="number">65</span>;</span><br><span class="line"><span class="comment">#访问日志配置</span></span><br><span class="line"><span class="attribute">log_format</span>  main  <span class="string">&#x27;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#x27;</span></span><br><span class="line"><span class="string">&#x27;$status $body_bytes_sent &quot;$http_referer&quot; &#x27;</span></span><br><span class="line"><span class="string">&#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#x27;</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#虚拟主机</span></span><br><span class="line"><span class="attribute">include</span> /application/nginx/conf/extra/www.conf;</span><br><span class="line"><span class="attribute">include</span> /application/nginx/conf/extra/blog.conf;</span><br><span class="line"><span class="attribute">include</span> /application/nginx/conf/extra/bbs.conf;</span><br><span class="line"><span class="attribute">include</span> /application/nginx/conf/extra/edu.conf;</span><br><span class="line"><span class="attribute">include</span> /application/nginx/conf/extra/phpmyadmin.conf;</span><br><span class="line"><span class="attribute">include</span> /application/nginx/conf/extra/status.conf;</span><br><span class="line"></span><br><span class="line"><span class="comment">#nginx优化----------------------</span></span><br><span class="line"><span class="comment">#隐藏版本号</span></span><br><span class="line"><span class="attribute">server_tokens</span> <span class="literal">on</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">#优化服务器域名的散列表大小 </span></span><br><span class="line"><span class="attribute">server_names_hash_bucket_size</span> <span class="number">64</span>;</span><br><span class="line"><span class="attribute">server_names_hash_max_size</span> <span class="number">2048</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">#开启高效文件传输模式</span></span><br><span class="line"><span class="attribute">sendfile</span> <span class="literal">on</span>;</span><br><span class="line"><span class="comment">#减少网络报文段数量</span></span><br><span class="line"><span class="comment">#tcp_nopush on;</span></span><br><span class="line"><span class="comment">#提高I/O性能</span></span><br><span class="line"><span class="attribute">tcp_nodelay</span> <span class="literal">on</span>;</span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<hr>
+<h3 id="调用-sendfile-system-call-接口，将文件作为包体发送"><a href="#调用-sendfile-system-call-接口，将文件作为包体发送" class="headerlink" title="调用 sendfile system call 接口，将文件作为包体发送"></a>调用 sendfile system call 接口，将文件作为包体发送</h3><p>NGINX 响应用户请求的时候，如果用户请求的是磁盘上的文件，NGINX 将不会把文件读取到内存，再发送给用户，那样真的太费内存以及 IO 性能了。NGINX 的做法是，直接通过上文提到的 <code>sendfile</code> 接口，来调用 system call ，从而是文件请求在不经过 User space 的情况下，直接在 kernel space 发送出去，这样做无疑减少了 IO 性能和内存使用率，大大提高了性能。同时 NGINX 也提供了 sendfile 接口，供我们在更多的场景下高效率发送文件。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*ngx_buf_s 设置缓冲区*/</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* ngx_file_t 表示一个文件*/</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* ngx_pool_cleanup_s http 响应结束之后关闭 fd */</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>example</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+
+<hr>
+<hr>
+<h3 id="XSendfile-in-X-Accel"><a href="#XSendfile-in-X-Accel" class="headerlink" title="XSendfile in X-Accel"></a>XSendfile in X-Accel</h3><p>saw <a target="_blank" rel="noopener" href="https://www.nginx.com/resources/wiki/start/topics/examples/xsendfile/">XSendfile</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/WIP/"># WIP</a>
+                    
+                        <a href="/tags/Infrastructure/"># Infrastructure</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/07/07/2019-07-07-%E7%A1%AC%E7%9B%98%E5%86%99%E5%88%B0%E4%B8%80%E5%8D%8A%E6%97%B6%EF%BC%8C%E7%AA%81%E7%84%B6%E6%96%AD%E7%94%B5%E4%BA%86%E6%80%8E%E4%B9%88%E5%8A%9E?%E2%80%94%E2%80%94-reed-solomon-%E7%BA%A0%E5%88%A0%E7%A0%81%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/">硬盘写到一半时，突然断电了怎么办?—— reed solomon 纠删码原理介绍</a>
+            
+            
+            <a class="next" rel="next" href="/2018/11/23/2018-11-23-%E5%85%B3%E4%BA%8E-http-3-%E7%9A%84%E4%B8%80%E4%BA%9B%E8%AE%B0%E5%BD%95/">关于 HTTP/3 的一些记录</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>PostgreSQL 中的覆盖索引（Covering index） | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">PostgreSQL 中的覆盖索引（Covering index）</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>数据库索引是在数据库中使用非常广泛的一个概念。索引就像是书的目录，通过书的目录能快速准确地定位到书籍的具体内容。<br>通常的关系型数据库中的索引数据结构都是由平衡树来维护的。一般我们给数据库建表的时候，都会为表指定一个主键。数据库正是根据表的主键将若干个表梳理成树状结构的。表中的主键也就相当于一个索引，也叫做聚集索引。数据库中的表顺序相对固定，一般只有一种顺序，通常就是由上面提到的平衡树来维护，平衡树中的叶节点都是由主键字段构成。因此，一般一张表只会有一个聚集索引。<br>假设我们执行一个 SQL 语句：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> people <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1234</span>;</span><br></pre></td></tr></table></figure>
+
+<p>数据库会根据聚集索引定位到 1234 所在的叶结点，然后再通过这个叶结点取到响应的数据行。这个查找分为三层，先从平衡树的根节点，也就是 dbs 开始查找，然后根据聚集索引找到对应 id=1234 的主键，即叶结点，最后是根据叶结点找到相关的数据行。<br>使用平衡树逐级去查找数据的速度，相比一条一条遍历查找的速度是以指数级提升的。<br>但是用了索引之后，虽然查找速度变快了，但是其插入数据却下降了。因为每次从平衡树插入新数据之后，平衡树都要自行‘平衡’一下，使树结构维持在一个正确的状态。增加删除更新数据都会改变平衡树中的索引结构，因此除了聚集索引之外我们还需要非聚集索引。</p>
+<p>非聚集索引同样也是用平衡树来存储数据，区别在于非聚集索引中各个叶结点的数据来自于表中手动定义的索引字段，而非主键。假如说我们给 people 表中的 name 字段加上索引，那么 name 字段就会有自己的，区别于主键结构的一套非聚集索引结构了。</p>
+<p>与聚集索引一样，因为平衡树结构的限制，每个索引都有自己独立的索引结构，也就是说每个索引都有自己的一个平衡树结构。比方说，上面的 name 字段有自己的结构，如果我们给 age 字段也加上索引，那么 age 字段也会有自己的结构， name 和 age<br>之间的所有结构不会相互影响。</p>
+<p>每次给新字段增加一个索引，字段中的数据就会被复制出来，生成一份新的索引结构，因此给表加新索引的同时也会增加表的体积，会占用磁盘空间。</p>
+<p>通过非聚集索引，我们可以会先查找到对应内容的索引字段，然后根&gt;据找到的字段找到对应的主键值，再使用主键值通过聚集索引找到需&gt; 要查找的数据。因此非聚集索引还是依赖聚集索引来定位数据的。但是除了这两种索引之外还有一种索引，叫做覆盖索引，就是今天要讲的那种索引。</p>
+<p>覆盖索引英文名叫做 Covering index ，是 MySQL 中‘特有’的一种索引。不同于我上面提到的两种索引，它可以不依赖聚集索引就能找到所需要的数据。使用非聚集索引的时候，每当为一个字段建立索引之后，字段中的内容就会被同步到索引结构中，如果为一个索引指定了两个字段，那么这两个字段的内容都会被同步到索引中。</p>
+<p>看一下这个例子:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator">/</span><span class="operator">/</span> 构建索引</span><br><span class="line"><span class="keyword">CREATE</span> index index_birthday <span class="keyword">ON</span> user_info(birthday);</span><br><span class="line"></span><br><span class="line"><span class="operator">/</span><span class="operator">/</span> 查询内容</span><br><span class="line"><span class="keyword">SELECT</span> user_name <span class="keyword">FROM</span> user_info <span class="keyword">WHERE</span> birthday<span class="operator">=</span><span class="string">&#x27;1993&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>这个例子的执行过程如下，</p>
+<ul>
+<li>先通过非聚集索引 index_birthday 查找 1993 年出生的人所对应的主键值。</li>
+<li>然后用得到的主键值通过聚集索引查找，找到对应的数据行</li>
+<li>最后，从得到的数据行中得到需要的 user_name 字段的值返回。</li>
+</ul>
+<p>假设我们把 index_birthday 索引改为覆盖索引：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> index index_birthday_and_user_name <span class="keyword">ON</span> user_info(birthday, user_name);</span><br></pre></td></tr></table></figure>
+
+<p>这个例子的执行过程变为：</p>
+<ul>
+<li>通过 index_birthday_and_user_name 这个索引找到 1993 年出生的叶结点</li>
+<li>叶结点中除了有需要查找的主键值之外，也包含了 user_name 字段的值，因此直接取出 user_name 对应的值即可。</li>
+</ul>
+<p>可以看到，用了覆盖索引比没用覆盖索引少了两个步骤，比较快。</p>
+<p>但是，这么方便的东西难道只有 MySQL 用户才能体验到？让我们这些使用 PostgreSQL 的用户情何以堪 :doge<br>不信邪的我 Google 了一番，发现了 psql wiki 里面这么一段<a target="_blank" rel="noopener" href="https://wiki.postgresql.org/wiki/Index-only_scans#Covering_indexes">文字</a>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Covering indexes</span><br><span class="line">Covering indexes are indexes creating for the express purpose of being used in index-only scans. They typically &quot;cover&quot; more columns than would otherwise make sense for an index, typically columns that are known to be part of particular expensive, frequently executed query&#x27;s selectlist. PostgreSQL supports using just the first few columns of the index in a regular index scan if that is in the query&#x27;s predicate, so covering indexes need not be completely</span><br><span class="line">useless for regular index scans.</span><br></pre></td></tr></table></figure>
+
+<p>大致意思就是 psql 有个叫做 index_only scans 的东西，支持在创建索引的时候，包括一些查询语句中的字段，因此只要提取到对应的索引中的字段就行了，不需要再去查找数据行中的内容。这应该就是 psql 中的覆盖索引实现了，只是换了个名字。使用 index_only scans 的时候会有两个限制：</p>
+<ul>
+<li>索引类型必须支持 index_only scans 的查找</li>
+<li>只能查询存储于索引中的列。</li>
+</ul>
+<p>除此之外，wiki 中还提到一句话:</p>
+<blockquote>
+<p>But there is an additional requirement for any table scan in PostgreSQL: it must verify that each retrieved row be “visible” to the query’s MVCC snapshot, as discussed in Chapter 13.</p>
+</blockquote>
+<p>意思大致是还有一个额外的限制，必须验证每个检索到的行对于该查询的 MVCC 快照是可见的。可见性信息并不存储在索引项中，只存储在堆项中。因此经常会发生从索引中找到数据，还要去数据堆中查找数据可见性的情况，还是有点耗费性能。但是 psql<br>提供了一个功能，它可以为表堆中的每一个页面跟踪是否其中所有的行的年龄都足够大，以至于对所有当前以及未来的事务都可见。这个信息存储在该表的可见性映射的一个位中。在找到一个候选索引项后，index_only scans 会检查对应堆页面的可见性映射位。<br>因此对于那些不常更新的表可能会更加适用 index_only scans 。</p>
+<p>创建索引的时候，在语句末端加上需要的字段即可创建:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> INDEX idx_pings_monitor_created</span><br><span class="line"><span class="keyword">ON</span> pings (monitor_id, created_at <span class="keyword">DESC</span>, response_time)</span><br><span class="line"><span class="keyword">WHERE</span> response_time <span class="keyword">IS</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>;</span><br></pre></td></tr></table></figure>
+
+<p>上面的例子创建了一个包含了 monitor_id, created_at, response_time 字段，位于 pings 表，并且 response_time 不为空的叫做 idx_pings_monitor_created 索引。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Database/"># Database</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/02/10/2018-02-10-useless-issue.../">Useless issue...</a>
+            
+            
+            <a class="next" rel="next" href="/2018/01/25/2018-01-25-sql-%E6%98%AF%E4%B8%80%E7%A7%8D%E6%AF%94-oo-%E6%9B%B4%E8%83%BD%E9%AB%98%E6%95%88%E6%8F%8F%E8%BF%B0%E4%B8%9A%E5%8A%A1%E7%9A%84%E6%96%B9%E6%B3%95/">SQL 是一种比 OO 更能高效描述业务的方法</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>Redox OS —— 一切皆 URL 的操作系统 | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Redox OS —— 一切皆 URL 的操作系统</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>你可能没有听说过 Redox OS,这是一款全部基于 Rust 实现的操作系统。基于 Rust 实现的原因之一是，Rust 用于无与伦比的内存管理机制和线程安全机制。为进一步保证系统安全，其采用了一个更加精简的系统内核，并抵制使用复杂庞大的内核。进一步说，在 UNIX 中有一些类似于驱动的东西需要在内核空间中运行，但是在 Redox OS 中，驱动程序甚至可以在用户空间中运行，而且不会导致计算机系统的宕机。</p>
+<p>Redox OS 有一套自己的规则来实现进程与内核之间的通信。这套规则叫做 <em>everything be a URL</em>  (一切皆 URL)。这套规则朴素但好用。你可以像这样打开一个带路径的文件 <code>scheme:path</code> 。如果没有文件规则限制，则默认为当前工作目录下，通常表示为 <code>file:</code> 。</p>
+<h3 id="什么是一切皆-URL"><a href="#什么是一切皆-URL" class="headerlink" title="什么是一切皆 URL"></a>什么是一切皆 URL</h3><p>一切皆 URL 是 Redox 设计规范中一个非常重要的原则。大致意思是，所有 API，设计思路等一整套生态系统都是以 URL 为中心展开，资源左右主要的通信原语。应用与应用直接，与系统之间，与守护进程间等等通信均使用 URL 。举例来说，应用程序不必要创建它们自己专门用来通信的实体。</p>
+<p>你可以通用这个规范设计出高一致性、简洁、灵活的接口。</p>
+<p>这个规范的作用不会被过度宣扬（这有点超出设计时的初衷了）。这个思路也不是全新创造出来的，<em>Plan9</em> 中就有类似的概念。另外一个成功的概念是 UNIX 中的一切皆文件。</p>
+<h3 id="与-‘一切皆文件’-的区别"><a href="#与-‘一切皆文件’-的区别" class="headerlink" title="与 ‘一切皆文件’ 的区别"></a>与 ‘一切皆文件’ 的区别</h3><p>在一切皆文件的概念中，所有类型的设备、进程、内核参数等等都可以在常规的文件系统的中被展现为一个文件。这可能会引发出一些荒诞的事情，例如硬盘中包含了 root 目录的文件系统，根目录 <code>/</code> 中包含了一个叫做 <code>dev</code> 的文件夹，其中包括了含有 root 文件系统的 <code>sda</code> 在内的众多设备文件…… 像这样的情况似乎缺乏了一点逻辑。此外，许多文件属性对许多特殊意义的文件并没有意义，比方说： <code>/dev/null</code> 的大小是多少，或者 sysfs 的配置选项是什么?<br>相比于一切皆文件的概念，Redox 不会为所有类型的资源来强制实现一个公共可访问的节点树，取而代之的是通过协议来区分的资源。这个方法下 USB 设备将不会展现为文件系统，而是展现为基于协议的一个 scheme ，比如说叫做 <code>EHCI</code> scheme 。真正地文件将会通过一个叫做 <code>file</code> 的 scheme 来访问。更多内容可以了解 <a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc1630">RFC 1630</a> 和 <a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc1738">RFC 1738</a>.</p>
+<hr>
+<hr>
+<h3 id="一些例子"><a href="#一些例子" class="headerlink" title="一些例子"></a>一些例子</h3><h4 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h4><p>这里有一个 TCP 协议结构的例子。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut</span> file = File::open(<span class="string">&quot;tcp:93.184.216.34:80&quot;</span>)?; <span class="comment">//example.com</span></span><br><span class="line">file.write(<span class="string">b&quot;GET / HTTP/1.1\nHost: example.com\nConnection: close\n\n&quot;</span>)?;</span><br><span class="line"></span><br><span class="line">io::copy(&amp;<span class="keyword">mut</span> file, &amp;<span class="keyword">mut</span> io::stdout())?;</span><br></pre></td></tr></table></figure>
+
+<p>即便网络支持在别的系统中不太容易实现，但是 redox 中却十分简单。你可以像这样开箱即用，<code>open(&quot;tcp:address&quot;, O_RDWR)</code> 。<br>上面这段代码实现了简单的 curls 功能，而且没有依赖任何类库（不像传统意义上的解析 http 协议，更像是一个直接执行 http 请求的库。）</p>
+<hr>
+<h4 id="Program-IPC"><a href="#Program-IPC" class="headerlink" title="Program IPC"></a>Program IPC</h4><p>以下是一个 IPC 的例子：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> server = File::open(<span class="string">&quot;chan:hello&quot;</span>, O_CREAT)?;</span><br><span class="line"></span><br><span class="line"><span class="keyword">loop</span> &#123;    </span><br><span class="line">    <span class="keyword">let</span> stream = syscall::dup(server.as_raw_fd(), <span class="string">b&quot;listen&quot;</span>)?;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut</span> stream = <span class="keyword">unsafe</span> &#123;File::from_raw_fd(stream)&#125;;</span><br><span class="line">    </span><br><span class="line">    stream.write(<span class="string">b&quot;Hello World!\n&quot;</span>)?;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>你可以调用 <code>open(&quot;chan:name&quot;, O_CREAT)</code> 来创建一个服务，然后使用 <code>dup(&quot;listen&quot;)</code> 来通过连接请求。<code>dup</code> 关键词的含义是赋值文件，但是可以选择采用 scheme 中已经使用过的路径。</p>
+<hr>
+<h4 id="Events"><a href="#Events" class="headerlink" title="Events"></a>Events</h4><p>这个方案有点特殊，不是因为它有任何特殊的硬编码异常，而是因为它在任何地方都使用，即使在其他方案中也是如此。<br>事件方案有点类似于 linux 的 epoll 。你可以将写入一个事件到一个实例中，这个实例将会在文件中监听和注册。然后你可以读这个事件，直到事件遇到第一次阻塞的时间为止。<br>下面有一个 <a target="_blank" rel="noopener" href="https://gitlab.redox-os.org/redox-os/rfcs/blob/master/text/0002-event-overhaul.md#detailed-design">event overhaul RFC</a> 的例子：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> TOKEN_TIME: <span class="built_in">usize</span> = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">const</span> TOKEN_FILE: <span class="built_in">usize</span> = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut</span> selector = File::open(<span class="string">&quot;event:&quot;</span>)?;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut</span> some_file = <span class="comment">/* anything you want to read from here, like a tcp stream */</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Deadline</span></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut</span> timeout = File::open(<span class="string">&quot;time:&quot;</span>)?;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut</span> time = TimeSpec::default();</span><br><span class="line">timeout.read(&amp;<span class="keyword">mut</span> time)?;</span><br><span class="line">time.tv_sec += <span class="number">2</span>; <span class="comment">// deadline to 2 seconds in the future</span></span><br><span class="line">timeout.write(&amp;time)?;</span><br><span class="line"></span><br><span class="line">selector.write(Event &#123;</span><br><span class="line">    id: timeout.as_raw_fd(),</span><br><span class="line">    flags: EVENT_READ,</span><br><span class="line">    data: TOKEN_TIME</span><br><span class="line">&#125;)?;</span><br><span class="line">selector.write(Event &#123;</span><br><span class="line">    id: some_file,</span><br><span class="line">    flags: EVENT_READ,</span><br><span class="line">    data: TOKEN_FILE</span><br><span class="line">&#125;)?;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut</span> event = Event::default();</span><br><span class="line">selector.read(&amp;<span class="keyword">mut</span> event)?;</span><br><span class="line"></span><br><span class="line"><span class="keyword">match</span> event.data &#123;</span><br><span class="line">    TOKEN_TIME =&gt; &#123;</span><br><span class="line">        <span class="comment">// The timeout of 2 seconds was exceeded</span></span><br><span class="line">    &#125;,</span><br><span class="line">    TOKEN_FILE =&gt; &#123;</span><br><span class="line">        <span class="comment">// The file can now be read!</span></span><br><span class="line">        <span class="comment">// How much can be read is undefined and depends on the scheme.</span></span><br><span class="line">        <span class="comment">// Most built-in schemes are nowadays edge triggered and you should</span></span><br><span class="line">        <span class="comment">// have the file be non-blocking and read over and over again</span></span><br><span class="line">        <span class="comment">// until you hit EAGAIN.</span></span><br><span class="line">        <span class="comment">// This matches the behavior of linux.</span></span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut</span> buf = [<span class="number">0</span>; <span class="number">16</span>];</span><br><span class="line">        <span class="keyword">loop</span> &#123;</span><br><span class="line">            <span class="keyword">match</span> some_file.read(&amp;<span class="keyword">mut</span> buf)? &#123;</span><br><span class="line">                <span class="literal">Ok</span>(<span class="number">0</span>) =&gt; <span class="keyword">break</span>, <span class="comment">// EOF, we read everything!</span></span><br><span class="line">                <span class="literal">Ok</span>(n) =&gt; &#123;</span><br><span class="line">                    <span class="comment">// Handle the read here.</span></span><br><span class="line">                    io::stdout().write(&amp;buf[..n])?;</span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="literal">Err</span>(<span class="keyword">ref</span> e) <span class="keyword">if</span> e.kind() == ErrorKind::WouldBlock =&gt; <span class="keyword">break</span>, <span class="comment">// can&#x27;t read any more this round.</span></span><br><span class="line">                <span class="literal">Err</span>(e) =&gt; <span class="keyword">return</span> <span class="literal">Err</span>(e)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Operating-System/"># Operating System</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/09/08/2018-09-08-getting-started-with-istio-and-run-istio-on-your-laptop./">Getting Started with Istio and run Istio on your laptop.</a>
+            
+            
+            <a class="next" rel="next" href="/2018/08/25/2018-08-25-pq4r-%E8%AF%BB%E4%B9%A6%E6%B3%95/">PQ4R 读书法</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

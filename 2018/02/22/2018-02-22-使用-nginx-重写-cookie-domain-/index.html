@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>使用 NGINX 重写 cookie domain  | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">使用 NGINX 重写 cookie domain </h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>用过 NGINX 的人都知道，NGINX 的 <code>proxy_pass</code> 模块用作反向代理，可以转发请求到 URL 参数到指定的服务器上。<br>如：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">location</span> / &#123;</span><br><span class="line">        <span class="attribute">proxy_pass</span> http://192.168.0.1; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>示例中将 server 根目录的请求转发到了服务器 <code>192.168.0.1</code> 上。</p>
+<p>受限于 HTTP 协议无状态的特点，有时候只靠转发 url 请求是没办法携带足够的数据到服务器的。然后人们发明了 cookies 来解决相关问题，我们可以通过 <code>cookies</code> 在客户端存储一定的数据，每次用户请求的时候自动在头部带上 cookies 的数据，使用 cookies 在一定程度上能够缓解 HTTP 无状态的‘弊端’。<br>然而，客户端往往并不是直接和服务器通信，中间还会经过反向代理以及负载均衡。有可能向 A 服务器发送了一个请求，但是 A 服务器只是一个中转服务，中转之后这个请求是被 B 服务器或者 C 服务器去处理，中间会跨几次域, 不同域之间的 cookies 的实现标准也不一定会一致，因此跨域通过 <code>proxy_pass</code> 转发请求的时候， cookies 很有可能会失效。<br>浏览器也会对 cookies 做一些限制，比如说，cookies 中的 domian 需要和当前访问页面的 domian 匹配，否则将无法写入 cookies 。如果请求 A 服务器 ，服务器用 proxy_pass 将请求转发到了 B 服务器下，B 服务器处理请求之后返回了带有 <code>Domain=B</code> 的 cookies ，但是由于现在访问的页面还是在 A 服务器的域名下，因此 B 返回的 cookies 将不会被正常写入。</p>
+<p>那么有没有办法在反向代理转发 url 请求的同时，能够同时转发重写 cookies 中的 domian ，使之能够被不同域的浏览器和服务器能够正常读写呢？<br>答案是有的。</p>
+<p>NGINX 的 <code>ngx_http_proxy_module</code> 模块中有个指令  <a target="_blank" rel="noopener" href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_cookie_domain">proxy_cookie_domain</a> 可以实现这个功能。它可以通过正则将 cookies 中的 domain rewrite 别的 domian 。</p>
+<p>语义如下：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Syntax:     <span class="attribute">proxy_cookie_domain</span> <span class="literal">off</span>;</span><br><span class="line">            <span class="attribute">proxy_cookie_domain</span> domain replacement;</span><br><span class="line">Default:    <span class="attribute">proxy_cookie_domain</span> <span class="literal">off</span>;</span><br><span class="line">Context:    http, server, location</span><br></pre></td></tr></table></figure>
+
+<p>比如说，我们想在 a.xxx 这个域名上从 b.xxx 获取 cookies ，我们可以写成这样:</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">listen</span> a.xxx:<span class="number">80</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attribute">location</span> /(.*) &#123;</span><br><span class="line">        <span class="attribute">proxy_cookie_domain</span> a\.xxx b\.xxx;</span><br><span class="line">        <span class="attribute">proxy_pass</span> http://b.xxx;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>与 <code>proxy_cookie_domain</code> 对应的还有一个 <a target="_blank" rel="noopener" href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_cookie_domain">proxy_cookie_path</a> 指令支持转发请求的时候重写 cookie 的 path 参数。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Infrastructure/"># Infrastructure</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/02/26/2018-02-26-overview-of-linux-memory-management-concepts:-slabs/">Overview of Linux Memory Management Concepts: Slabs</a>
+            
+            
+            <a class="next" rel="next" href="/2018/02/10/2018-02-10-useless-issue.../">Useless issue...</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

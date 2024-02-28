@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Wyatt Jia">
+
+
+    <meta name="subtitle" content="生活不过是事件循环">
+
+
+
+
+<title>使用 `code` 模块来调试 Python 代码 | Live like the event loop.</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">eventloop.live</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">eventloop.live</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                    <a class="menu-item" href="/find">Find</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">使用 `code` 模块来调试 Python 代码</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Wyatt Jia</a>
+                    
+
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>以调试 flask 应用为例，我们先构建一个最小化的 flask 应用作为参考示例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># hello.py</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/&quot;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello</span>():</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;Hello World!&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    app.run()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>命令行输入 <code>python hello.py</code> , 我们就能在 <code>http://localhost:5001</code> 访问我们的 hello world 应用了。</p>
+<hr>
+<p>但是今天我们要换一种方式来启动我们的应用。</p>
+<p>首先我们在 <code>hello.py</code> 中 <code>import code</code>， 然后把最后一行的 <code>app.run()</code> 改成 <code>code.interact(local=locals())</code>.<br>更改后的 <code>hello.py</code> 就变成下面这个样子：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># hello.py</span></span><br><span class="line"><span class="keyword">import</span> code</span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/&quot;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello</span>():</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;Hello World!&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    code.interact(local=<span class="built_in">locals</span>())</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>接下来我们继续在命令行执行 <code>python hello.py</code>来运行程序。注意运行结果，<code>Python</code> 给了我们一个 带有入门文件环境的 <code>REPL</code> ! 这就是 <code>Python</code> 自带的 <code>code</code> 模块的神奇之处!<br>接下来我们在 <code>REPL</code> 中试试看 <code>code</code> 模块有没有 <code>hello.py</code> 中的内容引入进来：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">Python 2.7.11 (v2.7.11:6d1b6a68f775, Dec  5 2015, 12:54:16)</span><br><span class="line">[GCC 4.2.1 (Apple Inc. build 5666) (dot 3)] on darwin</span><br><span class="line">Type <span class="string">&quot;help&quot;</span>, <span class="string">&quot;copyright&quot;</span>, <span class="string">&quot;credits&quot;</span> or <span class="string">&quot;license&quot;</span> <span class="keyword">for</span> more information.</span><br><span class="line">(InteractiveConsole)</span><br><span class="line">&gt;&gt;&gt; import pprint</span><br><span class="line">&gt;&gt;&gt; pprint.pprint(app.__dict__)</span><br><span class="line">&#123;<span class="string">&#x27;_before_request_lock&#x27;</span>: &lt;thread.lock object at 0x101487a50&gt;,</span><br><span class="line"> <span class="string">&#x27;_blueprint_order&#x27;</span>: [],</span><br><span class="line"> <span class="string">&#x27;_error_handlers&#x27;</span>: &#123;&#125;,</span><br><span class="line"> <span class="string">&#x27;_got_first_request&#x27;</span>: False,</span><br><span class="line"> <span class="string">&#x27;_logger&#x27;</span>: None,</span><br><span class="line"> <span class="string">&#x27;_static_folder&#x27;</span>: <span class="string">&#x27;static&#x27;</span>,</span><br><span class="line"> <span class="string">&#x27;_static_url_path&#x27;</span>: None,</span><br><span class="line"> <span class="string">&#x27;after_request_funcs&#x27;</span>: &#123;&#125;,</span><br><span class="line"> <span class="string">&#x27;before_first_request_funcs&#x27;</span>: [],</span><br><span class="line"> <span class="string">&#x27;before_request_funcs&#x27;</span>: &#123;&#125;,</span><br><span class="line"> <span class="string">&#x27;blueprints&#x27;</span>: &#123;&#125;,</span><br><span class="line"> <span class="string">&#x27;cli&#x27;</span>: &lt;flask.cli.AppGroup object at 0x10310a710&gt;,</span><br><span class="line"> <span class="string">&#x27;config&#x27;</span>: &lt;Config &#123;<span class="string">&#x27;JSON_AS_ASCII&#x27;</span>: True, <span class="string">&#x27;USE_X_SENDFILE&#x27;</span>: False, <span class="string">&#x27;SESSION_COOKIE_PATH&#x27;</span>: None, <span class="string">&#x27;SESSION_COOKIE_DOMAIN&#x27;</span>: None, <span class="string">&#x27;SESSION_COOKIE_NAME&#x27;</span>: <span class="string">&#x27;session&#x27;</span>, <span class="string">&#x27;SESSION_REFRESH_EACH_REQUEST&#x27;</span>: True, <span class="string">&#x27;LOGGER_HANDLER_POLICY&#x27;</span>: <span class="string">&#x27;always&#x27;</span>, <span class="string">&#x27;LOGGER_NAME&#x27;</span>: <span class="string">&#x27;__main__&#x27;</span>, <span class="string">&#x27;DEBUG&#x27;</span>: False, <span class="string">&#x27;SECRET_KEY&#x27;</span>: None, <span class="string">&#x27;EXPLAIN_TEMPLATE_LOADING&#x27;</span>: False, <span class="string">&#x27;MAX_CONTENT_LENGTH&#x27;</span>: None, <span class="string">&#x27;APPLICATION_ROOT&#x27;</span>: None, <span class="string">&#x27;SERVER_NAME&#x27;</span>: None, <span class="string">&#x27;PREFERRED_URL_SCHEME&#x27;</span>: <span class="string">&#x27;http&#x27;</span>, <span class="string">&#x27;JSONIFY_PRETTYPRINT_REGULAR&#x27;</span>: True, <span class="string">&#x27;TESTING&#x27;</span>: False, <span class="string">&#x27;PERMANENT_SESSION_LIFETIME&#x27;</span>: datetime.timedelta(31), <span class="string">&#x27;PROPAGATE_EXCEPTIONS&#x27;</span>: None, <span class="string">&#x27;TEMPLATES_AUTO_RELOAD&#x27;</span>: None, <span class="string">&#x27;TRAP_BAD_REQUEST_ERRORS&#x27;</span>: False, <span class="string">&#x27;JSON_SORT_KEYS&#x27;</span>: True, <span class="string">&#x27;JSONIFY_MIMETYPE&#x27;</span>: <span class="string">&#x27;application/json&#x27;</span>, <span class="string">&#x27;SESSION_COOKIE_HTTPONLY&#x27;</span>: True, <span class="string">&#x27;SEND_FILE_MAX_AGE_DEFAULT&#x27;</span>: datetime.timedelta(0, 43200), <span class="string">&#x27;PRESERVE_CONTEXT_ON_EXCEPTION&#x27;</span>: None, <span class="string">&#x27;SESSION_COOKIE_SECURE&#x27;</span>: False, <span class="string">&#x27;TRAP_HTTP_EXCEPTIONS&#x27;</span>: False&#125;&gt;,</span><br><span class="line"> <span class="string">&#x27;error_handler_spec&#x27;</span>: &#123;None: &#123;&#125;&#125;,</span><br><span class="line"> <span class="string">&#x27;extensions&#x27;</span>: &#123;&#125;,</span><br><span class="line"> <span class="string">&#x27;import_name&#x27;</span>: <span class="string">&#x27;__main__&#x27;</span>,</span><br><span class="line"> <span class="string">&#x27;instance_path&#x27;</span>: <span class="string">&#x27;/Users/Wells/Documents/blogic/instance&#x27;</span>,</span><br><span class="line"> <span class="string">&#x27;name&#x27;</span>: <span class="string">&#x27;hello&#x27;</span>,</span><br><span class="line"> <span class="string">&#x27;root_path&#x27;</span>: <span class="string">&#x27;/Users/Wells/Documents/blogic&#x27;</span>,</span><br><span class="line"> <span class="string">&#x27;shell_context_processors&#x27;</span>: [],</span><br><span class="line"> <span class="string">&#x27;teardown_appcontext_funcs&#x27;</span>: [],</span><br><span class="line"> <span class="string">&#x27;teardown_request_funcs&#x27;</span>: &#123;&#125;,</span><br><span class="line"> <span class="string">&#x27;template_context_processors&#x27;</span>: &#123;None: [&lt;<span class="keyword">function</span> _default_template_ctx_processor at 0x1017c08c0&gt;]&#125;,</span><br><span class="line"> <span class="string">&#x27;template_folder&#x27;</span>: <span class="string">&#x27;templates&#x27;</span>,</span><br><span class="line"> <span class="string">&#x27;url_build_error_handlers&#x27;</span>: [],</span><br><span class="line"> <span class="string">&#x27;url_default_functions&#x27;</span>: &#123;&#125;,</span><br><span class="line"> <span class="string">&#x27;url_map&#x27;</span>: Map([&lt;Rule <span class="string">&#x27;/&#x27;</span> (HEAD, OPTIONS, GET) -&gt; hello&gt;,</span><br><span class="line"> &lt;Rule <span class="string">&#x27;/static/&lt;filename&gt;&#x27;</span> (HEAD, OPTIONS, GET) -&gt; static&gt;]),</span><br><span class="line"> <span class="string">&#x27;url_value_preprocessors&#x27;</span>: &#123;&#125;,</span><br><span class="line"> <span class="string">&#x27;view_functions&#x27;</span>: &#123;<span class="string">&#x27;hello&#x27;</span>: &lt;<span class="keyword">function</span> hello at 0x10310b1b8&gt;,</span><br><span class="line">                    <span class="string">&#x27;static&#x27;</span>: &lt;bound method Flask.send_static_file of &lt;Flask <span class="string">&#x27;hello&#x27;</span>&gt;&gt;&#125;&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>显然是引入进来了， 这样我们可以通过 <code>REPL</code> 调试代码，在某些场景（例如没有 IDE 的情况下）下会很适用。</p>
+<hr>
+<blockquote>
+<p>相关链接:</p>
+</blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.python.org/2/library/code.html">code — Interpreter base classes</a></li>
+<li><a target="_blank" rel="noopener" href="http://flask.pocoo.org/">Flask</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop">Read–eval–print loop</a></li>
+</ul>
+<hr>
+<p>以上。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Wyatt Jia</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2023 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Python/"># Python</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/15/2017-05-15-%E4%BD%BF%E7%94%A8-%60ast%60-%E6%A8%A1%E5%9D%97%E8%A7%A3%E6%9E%90-python-%E4%BB%A3%E7%A0%81/">使用 `ast` 模块解析 Python 代码</a>
+            
+            
+            <a class="next" rel="next" href="/2017/05/10/2017-05-10-%E7%BA%BF%E7%A8%8B%E5%92%8C%E4%BF%A1%E5%8F%B7/">线程和信号</a>
+            
+        </section>
+    <script src="https://giscus.app/client.js"
+        data-repo="WyattJia/WyattJia"
+        data-repo-id="MDEwOlJlcG9zaXRvcnk4MzgxMzgzMg=="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOBP7lyM4CUXoV"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+    </article>
+</div>
+
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Wyatt Jia | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
