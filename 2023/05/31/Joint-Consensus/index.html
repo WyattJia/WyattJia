@@ -129,6 +129,68 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
@@ -147,7 +209,24 @@
         </header>
 
         <div class="post-content">
-            
+            <h3 id="Raft-共识算法中的联合共识（Joint-Consensus）详解"><a href="#Raft-共识算法中的联合共识（Joint-Consensus）详解" class="headerlink" title="Raft 共识算法中的联合共识（Joint Consensus）详解"></a>Raft 共识算法中的联合共识（Joint Consensus）详解</h3><p>Raft 是一个因其简单有效而广为人知的共识算法，它在分布式系统中管理复制日志。Raft 设计的一个关键方面是其对集群成员变更的处理方法，称为“联合共识（Joint Consensus）”。本博客文章深入探讨了联合共识的原理，说明了 Raft 如何确保在不同集群配置之间平滑且安全地过渡。</p>
+<h4 id="分布式系统中的共识理解"><a href="#分布式系统中的共识理解" class="headerlink" title="分布式系统中的共识理解"></a>分布式系统中的共识理解</h4><p>在深入联合共识之前，理解共识算法在分布式系统中的作用至关重要。这些算法允许一个节点集群就一系列值（或命令）达成一致，确保一致性和可靠性，即使面对故障情况。Raft 通过选举一个领导者来管理跟随者之间的日志复制来实现这一点。共识不仅对正常操作至关重要，对于集群的成员变更也是如此。</p>
+<h4 id="成员变更的挑战"><a href="#成员变更的挑战" class="headerlink" title="成员变更的挑战"></a>成员变更的挑战</h4><p>在不中断服务的情况下改变分布式系统中的服务器集合是一项挑战。直接重新配置的简单方法可能导致脑裂情况，即集群的两个子集认为它们是权威组，可能导致数据不一致。Raft 通过联合共识解决了这些挑战。</p>
+<h4 id="联合共识：基础"><a href="#联合共识：基础" class="headerlink" title="联合共识：基础"></a>联合共识：基础</h4><p>联合共识是一种两阶段方法，用于以确保连续操作和一致性的方式更改集群配置。其核心思想是通过一个同时包含旧配置和新配置的中间状态（称为“联合配置”）从一个配置过渡到另一个配置。</p>
+<h5 id="第一阶段：进入联合配置"><a href="#第一阶段：进入联合配置" class="headerlink" title="第一阶段：进入联合配置"></a>第一阶段：进入联合配置</h5><ol>
+<li><strong>提出新配置</strong>：领导者发起配置更改，提出一个新配置。</li>
+<li><strong>过渡到联合配置</strong>：而不是直接切换到新配置，集群过渡到联合配置，包括旧配置和新配置。这个联合状态确保集群在过渡期间可以正常运行，因为决策需要两个配置的多数派同意。</li>
+</ol>
+<h5 id="第二阶段：退出联合配置"><a href="#第二阶段：退出联合配置" class="headerlink" title="第二阶段：退出联合配置"></a>第二阶段：退出联合配置</h5><ol>
+<li><strong>承诺新配置</strong>：一旦联合配置被提交到日志并复制到旧和新服务器的大多数上，集群移动以仅承诺新配置。</li>
+<li><strong>完成过渡</strong>：系统退出联合配置阶段，仅在新配置下运行。这一步也提交到日志以确保一致性。</li>
+</ol>
+<h4 id="联合共识中的安全性和活性"><a href="#联合共识中的安全性和活性" class="headerlink" title="联合共识中的安全性和活性"></a>联合共识中的安全性和活性</h4><p>联合共识确保了集群在重新配置过程中保持运行和一致。通过在联合阶段要求旧配置和新配置都有多数派的支持，Raft 防止了脑裂情况，并确保任何时候只有一个配置是活动的。这种方法还促进了活性，因为系统可以继续处理请求而无需中断。</p>
+<h4 id="实际意义"><a href="#实际意义" class="headerlink" title="实际意义"></a>实际意义</h4><p>联合共识的优雅之处在于其简单性和有效性。它允许基于 Raft 的系统动态地扩展和适应环境或需求的变化，而不牺牲可用性或一致性。然而，实现联合共识需要仔细考虑过渡状态和节点之间的协调，以确保平滑过渡。</p>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><p>Raft 中的联合共识巧妙地解决了分布式系统中改变集群成</p>
+<p>员的复杂问题。通过使用中间的联合配置，Raft 确保系统在变更过程中保持一致和可用，避免了更简单方法的陷阱。这种机制是 Raft 设计哲学的见证，即在面对复杂的分布式系统挑战时，优先考虑简单性、安全性和可理解性。</p>
+<p>理解和实现联合共识可以显著提高分布式应用的弹性和灵活性，使 Raft 成为分布式系统架构师和开发人员的一个有吸引力的选择。</p>
+
         </div>
 
         
@@ -174,6 +253,10 @@
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/Raft/"># Raft</a>
+                    
+                        
                 </span>
             </div>
             <div>
