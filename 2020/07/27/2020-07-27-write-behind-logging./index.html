@@ -129,6 +129,68 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
@@ -147,7 +209,20 @@
         </header>
 
         <div class="post-content">
-            <p><a target="_blank" rel="noopener" href="https://app.leanboard.io/board/4fcdad71-7424-4a5e-9645-5397a325deb4">https://app.leanboard.io/board/4fcdad71-7424-4a5e-9645-5397a325deb4</a></p>
+            <p>Write Behind Logging（WBL）是一种数据库和文件系统中常用的技术，用于确保数据的持久性和一致性，特别是在面对系统崩溃或故障时。它是事务日志（Transaction Log）策略的一种形式，与更常见的 Write Ahead Logging（WAL）相对。在WAL中，所有的修改先记录在日志中，再应用到实际的数据文件上；而WBL采取相反的顺序，先修改数据文件，然后异步地将这些更改写入到日志中。</p>
+<h3 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h3><p>WBL的核心思想是允许应用或数据库首先直接对内存或缓存中的数据进行更新，然后在后台异步地将这些更改持久化到磁盘上。这种方式可以显著提高系统的写入性能，因为它减少了即时磁盘I/O操作的需要。</p>
+<h3 id="关键特点"><a href="#关键特点" class="headerlink" title="关键特点"></a>关键特点</h3><ul>
+<li><strong>性能优势</strong>：WBL通过减少即时磁盘I/O操作，可以提供更高的写入性能，特别是在高负载情况下。</li>
+<li><strong>数据一致性风险</strong>：与WAL相比，WBL可能会增加数据丢失的风险，因为在系统崩溃时，还未被写入磁盘的更改可能会丢失。</li>
+<li><strong>后台同步</strong>：WBL通常依赖于后台进程或线程定期将内存中的更改同步到磁盘上，这个过程可能是基于时间间隔或者触发条件执行的。</li>
+<li><strong>应用场景</strong>：由于其性能优势和数据一致性的权衡，WBL更适合于对写入性能要求高、但可以容忍短暂数据丢失风险的应用场景。</li>
+</ul>
+<h3 id="与WAL的对比"><a href="#与WAL的对比" class="headerlink" title="与WAL的对比"></a>与WAL的对比</h3><ul>
+<li><strong>性能</strong>：WBL在多数写入密集型应用中提供更好的性能，因为它减轻了即时写入磁盘的压力。WAL在需要保证数据绝对一致性的场景下更为常用。</li>
+<li><strong>数据安全</strong>：WAL提供了更高的数据安全保障，因为所有更改都会先记录在日志中，确保即使在系统崩溃后也能恢复数据。WBL在面对系统故障时，可能会导致最近的数据更改丢失。</li>
+<li><strong>恢复时间</strong>：使用WAL的系统可能会因为在恢复过程中需要重放日志而有更长的恢复时间。WBL系统的恢复时间可能更短，但这是以牺牲数据一致性为代价的。</li>
+</ul>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>Write Behind Logging是一种优化写入性能的策略，通过异步将更改持久化到磁盘来实现。它适用于那些可以接受在系统崩溃时丢失部分数据的场景，如某些缓存系统或者是对实时性要求不是极其严格的数据存储系统。正确的应用WBL需要细致考量数据一致性需求和性能优化之间的平衡。</p>
 
         </div>
 

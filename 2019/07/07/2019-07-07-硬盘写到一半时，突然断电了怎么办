@@ -15,7 +15,7 @@
 
 
 
-<title>硬盘写到一半时，突然断电了怎么办?—— reed solomon 纠删码原理介绍 | Live like the event loop.</title>
+<title>数据写到一半时，突然断电了怎么办? | Live like the event loop.</title>
 
 
 
@@ -129,11 +129,73 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">硬盘写到一半时，突然断电了怎么办?—— reed solomon 纠删码原理介绍</h1>
+            <h1 class="post-title">数据写到一半时，突然断电了怎么办?</h1>
             
                 <div class="post-meta">
                     
@@ -147,7 +209,14 @@
         </header>
 
         <div class="post-content">
-            <p>硬盘写到一半时，突然断电了怎么办?</p>
+            <p>文件系统处理数据写到一半时发生断电的情况，主要依赖于其设计和实现中的一些关键技术和策略。以下是一些常见的技术和策略：</p>
+<h3 id="1-日志文件系统（Journaling）"><a href="#1-日志文件系统（Journaling）" class="headerlink" title="1. 日志文件系统（Journaling）"></a>1. 日志文件系统（Journaling）</h3><p>日志文件系统，如ext3、ext4、NTFS等，通过先写日志（即先记录即将发生的更改）的方式来保证文件系统的一致性。如果在写入数据时发生断电，文件系统可以在下一次启动时检查日志，回滚或完成未完成的操作，以此来避免数据的损坏。</p>
+<h3 id="2-写入前检查（Write-Ahead-Logging-WAL）"><a href="#2-写入前检查（Write-Ahead-Logging-WAL）" class="headerlink" title="2. 写入前检查（Write-Ahead Logging, WAL）"></a>2. 写入前检查（Write-Ahead Logging, WAL）</h3><p>这是日志文件系统的一种实现技术，确保在实际修改数据之前，将修改操作写入到一个单独的日志文件中。这样，在发生断电后，可以通过日志来重新执行或撤销这些操作，确保数据的完整性。</p>
+<h3 id="3-复制写入（Copy-on-Write-COW）"><a href="#3-复制写入（Copy-on-Write-COW）" class="headerlink" title="3. 复制写入（Copy-on-Write, COW）"></a>3. 复制写入（Copy-on-Write, COW）</h3><p>一些文件系统，如ZFS和Btrfs，使用复制写入技术。当数据被修改时，它们先将更改写入到磁盘的一个新位置。只有在新数据完全写入后，文件系统的元数据才会更新以指向新数据。这样，如果在写入过程中发生断电，旧的数据仍然是完整的，文件系统不会处于不一致状态。</p>
+<h3 id="4-原子操作"><a href="#4-原子操作" class="headerlink" title="4. 原子操作"></a>4. 原子操作</h3><p>文件系统可能设计为执行原子操作，即要么完全完成要么完全不做。这通过使用各种技术来实现，例如通过在一个操作中更新多个相关的文件系统结构，只有在所有结构都成功写入后，这些变化才被认为是”提交”的。</p>
+<h3 id="5-元数据校验和数据校验"><a href="#5-元数据校验和数据校验" class="headerlink" title="5. 元数据校验和数据校验"></a>5. 元数据校验和数据校验</h3><p>一些现代文件系统（如ZFS）不仅在元数据上使用校验和来检测错误，也在实际数据上使用。这样，在发生意外断电后，文件系统在访问数据时可以检测到数据是否损坏，如果使用了冗余存储技术（如RAID），甚至可以自动修复损坏的数据。</p>
+<h3 id="6-电池备份缓存"><a href="#6-电池备份缓存" class="headerlink" title="6. 电池备份缓存"></a>6. 电池备份缓存</h3><p>一些存储系统使用带有电池备份的缓存，以保证在电源断电时，缓存中的数据不会丢失，并且可以在电源恢复后继续写入磁盘。</p>
+<p>不同的文件系统和存储技术可能会结合使用上述多种策略来确保在断电或其他异常情况下数据的一致性和完整性。</p>
 
         </div>
 

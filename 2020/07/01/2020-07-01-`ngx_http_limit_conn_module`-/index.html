@@ -129,6 +129,68 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
@@ -147,7 +209,43 @@
         </header>
 
         <div class="post-content">
-            
+            <p>阅读 <code>ngx_http_limit_conn_module</code> 源码是一个深入了解 Nginx 如何实现连接限制的好方法。这个模块主要用于限制同一时间点对服务器的并发连接数，是 Nginx 提供的一种基本的流量控制手段。在开始之前，我们需要了解 <code>ngx_http_limit_conn_module</code> 的基本工作原理和它如何集成到 Nginx 的整体架构中。</p>
+<h3 id="模块概述"><a href="#模块概述" class="headerlink" title="模块概述"></a>模块概述</h3><p><code>ngx_http_limit_conn_module</code> 允许你基于一定的条件（如客户端的 IP 地址）限制并发连接数。它通常用于防止过多的连接消耗服务器资源或作为基本的防DDoS措施。配置指令通常在 Nginx 的配置文件中设置，如 <code>limit_conn_zone</code> 和 <code>limit_conn</code>。</p>
+<h3 id="源码结构"><a href="#源码结构" class="headerlink" title="源码结构"></a>源码结构</h3><p>源码文件主要位于 Nginx 源代码的 <code>/src/http/modules/ngx_http_limit_conn_module.c</code> 路径下。主要结构和函数包括：</p>
+<ul>
+<li><strong>模块初始化</strong>: 包括模块的初始化函数，如 <code>ngx_http_limit_conn_init</code>，这些函数负责模块的启动和配置的初始化。</li>
+<li><strong>配置解析</strong>: 涉及到解析 Nginx 配置文件中与连接限制相关的指令，如 <code>limit_conn_zone</code> 和 <code>limit_conn</code>。</li>
+<li><strong>请求处理</strong>: 核心逻辑部分，处理每个进入的 HTTP 请求，判断当前连接是否超过了配置的限制，并据此决定是否允许请求继续。</li>
+<li><strong>共享内存</strong>: 用于跟踪和计数当前的连接数。<code>ngx_http_limit_conn_module</code> 使用 Nginx 的共享内存机制来存储和更新连接数信息。</li>
+</ul>
+<h3 id="核心流程"><a href="#核心流程" class="headerlink" title="核心流程"></a>核心流程</h3><ol>
+<li><strong>配置解析</strong>: 当 Nginx 启动或重新加载配置时，它会解析配置文件，并根据 <code>limit_conn_zone</code> 和 <code>limit_conn</code> 指令初始化限制条件。</li>
+<li><strong>共享内存分配</strong>: 根据 <code>limit_conn_zone</code> 指令配置的参数，为每个限制区域分配共享内存。</li>
+<li><strong>请求处理</strong>: 对于每个进入的请求，模块会检查请求是否符合某个已定义的限制条件。如果请求超出了允许的连接数，Nginx 将返回配置的错误码（通常是 503 服务不可用）。</li>
+<li><strong>连接计数</strong>: 对于允许的请求，模块会在共享内存中相应地增加连接数。当连接关闭时，连接数会减少。</li>
+</ol>
+<h3 id="阅读建议"><a href="#阅读建议" class="headerlink" title="阅读建议"></a>阅读建议</h3><ul>
+<li><strong>深入理解共享内存的使用</strong>: 了解 Nginx 如何使用共享内存来跟踪不同工作进程间的连接数是理解这个模块的关键。</li>
+<li><strong>掌握配置解析</strong>: 理解如何从 Nginx 配置文件中解析出限制条件对于定制和扩展模块功能非常重要。</li>
+<li><strong>跟踪请求处理流程</strong>: 关注模块如何处理每个请求，并在超出限制时作出反应，这有助于理解其在实际部署中的行为。</li>
+</ul>
+<p>由于直接深入 Nginx 的源代码可能比较复杂，建议有一定的 C 语言基础，并且对 Nginx 的基本架构和工作原理有所了解。阅读源码时，可以边查看代码边使用调试工具步进，这样有助于理解各部分代码的作用和相互之间的关系。</p>
+<h3 id="1-模块初始化和配置指令"><a href="#1-模块初始化和配置指令" class="headerlink" title="1. 模块初始化和配置指令"></a>1. 模块初始化和配置指令</h3><p>在 Nginx 的模块中，每个模块都会定义一个或多个配置指令以及处理这些指令的函数。例如，<code>ngx_http_limit_conn_module</code> 定义了 <code>limit_conn_zone</code> 和 <code>limit_conn</code> 指令。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">ngx_command_t</span>  ngx_http_limit_conn_commands[] = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        ngx_string(<span class="string">&quot;limit_conn_zone&quot;</span>),</span><br><span class="line">        NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE2,</span><br><span class="line">        ngx_http_limit_conn_zone,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="literal">NULL</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        ngx_string(<span class="string">&quot;limit_conn&quot;</span>),</span><br><span class="line">        NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE2,</span><br><span class="line">        ngx_http_limit_conn,</span><br><span class="line">        NGX_HTTP_LOC_CONF_OFFSET,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="literal">NULL</span></span><br><span class="line">    &#125;,</span><br><span class="line">    ngx_null_command</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这段代码定义了两个配置指令：<code>limit_conn_zone</code> 和 <code>limit_conn</code>，以及它们对应的处理函数 <code>ngx_http_limit_conn_zone</code> 和 <code>ngx_http_limit_conn</code>。</p>
+<h3 id="2-配置解析函数"><a href="#2-配置解析函数" class="headerlink" title="2. 配置解析函数"></a>2. 配置解析函数</h3><p>对于 <code>limit_conn_zone</code> 指令，解析函数 <code>ngx_http_limit_conn_zone</code> 负责解析配置并初始化必要的数据结构。这通常涉及解析参数、分配共享内存等。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">char</span> *</span></span><br><span class="line"><span class="function"><span class="title">ngx_http_limit_conn_zone</span><span class="params">(<span class="keyword">ngx_conf_t</span> *cf, <span class="keyword">ngx_command_t</span> *cmd, <span class="keyword">void</span> *conf)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 参数解析和共享内存分配逻辑</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-请求处理"><a href="#3-请求处理" class="headerlink" title="3. 请求处理"></a>3. 请求处理</h3><p>请求处理通常在一个名为 <code>ngx_http_limit_conn_handler</code> 的函数中进行，它会检查每个请求是否超过了配置的连接数限制。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">ngx_int_t</span></span></span><br><span class="line"><span class="function"><span class="title">ngx_http_limit_conn_handler</span><span class="params">(<span class="keyword">ngx_http_request_t</span> *r)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 检查连接数是否超限</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这个函数中，模块会查找当前请求是否匹配之前配置的限制条件。如果请求超过了限制，它可以直接返回一个错误代码（如 <code>NGX_HTTP_SERVICE_UNAVAILABLE</code>），否则，它会增加当前的连接数并允许请求继续。</p>
+<h3 id="4-连接计数调整"><a href="#4-连接计数调整" class="headerlink" title="4. 连接计数调整"></a>4. 连接计数调整</h3><p>当请求被允许继续时，模块会在共享内存中对应的计数器上增加连接数。这通常发生在请求开始时。当请求结束时（无论是正常完成还是因为错误终止），连接数需要相应减少。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ngx_shmtx_lock(&amp;shpool-&gt;mutex);</span><br><span class="line"><span class="comment">// 增加或减少连接数</span></span><br><span class="line">ngx_shmtx_unlock(&amp;shpool-&gt;mutex);</span><br></pre></td></tr></table></figure>
+
+<p>以上是一些关键部分的简化展示和解释。每个函数的实现细节会更加复杂，涉及到内存管理、并发控制、错误处理等多个方面。建议在有一定 C 语言基础和对 Nginx 架构有一定了解的前提下，结合具体的源码文件进行详细阅读。这样可以更好地理解每个部分的具体职责和实现逻辑。</p>
+
         </div>
 
         
@@ -191,7 +289,7 @@
                 <a class="prev" rel="prev" href="/2020/07/24/2020-07-24-rocksdb-%E5%A6%82%E4%BD%95%E6%9C%80%E5%A4%A7%E5%8C%96%E5%88%A9%E7%94%A8%E7%A9%BA%E9%97%B4%E8%B5%84%E6%BA%90/">RocksDB 如何最大化利用空间资源</a>
             
             
-            <a class="next" rel="next" href="/2020/06/10/2020-06-10-%E6%AF%94-radix-sort-%E6%9B%B4%E5%BF%AB%E7%9A%84%E6%8E%92%E5%BA%8F%E6%96%B9%E5%BC%8F:-%60kirkpatrick-reisch%60-%E6%8E%92%E5%BA%8F/">比 radix sort 更快的排序方式: `Kirkpatrick-Reisch` 排序</a>
+            <a class="next" rel="next" href="/2019/09/24/2019-09-24-%5B%E8%AF%91%5Dsolving-the-wrong-problem-/">[译]Solving the wrong problem </a>
             
         </section>
     <script src="https://giscus.app/client.js"

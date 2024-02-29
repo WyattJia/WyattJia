@@ -129,6 +129,68 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
@@ -147,7 +209,25 @@
         </header>
 
         <div class="post-content">
-            
+            <p>最小表达性原则（Principle of Least Expressiveness，PoLE），有时也称为最小权力原则（Principle of Least Power），是计算机科学中的一个设计原则，建议对于给定的任务使用最不强大（或最不表达性）的计算语言。这个原则通常应用于软件开发、编程语言选择和系统架构设计中。这个概念源于对如何通过约束实际上能够使系统更健壮、安全和可维护的更广泛视角。</p>
+<h3 id="关键概念"><a href="#关键概念" class="headerlink" title="关键概念"></a>关键概念</h3><ul>
+<li><strong>表达性</strong>：指的是编程语言或系统可以直接表示的概念和构造的广度。表达性更强的语言可以直接描述更广泛的操作、行为和数据结构。</li>
+<li><strong>能力</strong>：在此上下文中，语言的“能力”是指编写可以执行广泛任务的程序的能力。更强大的语言提供了更大的灵活性，但也可能引入复杂性和滥用的可能性。</li>
+</ul>
+<h3 id="理念"><a href="#理念" class="headerlink" title="理念"></a>理念</h3><p>最小表达性原则背后的理念包括几个关键考虑因素：</p>
+<ul>
+<li><strong>安全性</strong>：较不表达性的系统通常向用户和程序员暴露较少的操作和功能，减少了恶意活动的攻击面。通过限制可以做什么，系统本质上变得更加安全。</li>
+<li><strong>简单性和可维护性</strong>：使用较不表达性语言设计的系统通常更简单、更易于理解。这种简单性转化为改进的可维护性，因为在修改系统时需要考虑的构造和行为较少。</li>
+<li><strong>互操作性</strong>：较不表达性的语言和接口往往更加专注和标准化，使它们更容易与其他系统集成。这是因为行为和交互更加可预测和明确定义。</li>
+<li><strong>优化</strong>：通常更容易优化使用较不表达性语言构建的系统的性能，因为它们有限的操作范围允许编译器和运行时环境进行更有效的分析和优化。</li>
+</ul>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><ul>
+<li><strong>标记语言与编程语言</strong>：如HTML这样的标记语言比如JavaScript这样的编程语言表达性要低。它们设计用于结构化和呈现内容，而不是描述复杂的计算。这使得HTML在描述网页内容时本质上是安全的，因为它不能直接执行可能危害系统的动态操作。</li>
+<li><strong>数据库查询语言</strong>：SQL专为数据操作和查询设计。它比通用编程语言表达性低，但非常适合数据库操作，提供了权力和安全之间的平衡。</li>
+<li><strong>软件接口</strong>：考虑到PoLE，API和微服务通常设计得只暴露服务运行所需的必要操作。这限制了滥用的可能性，并简化了安全和维护。</li>
+</ul>
+<h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><p>最小表达性原则鼓励选择工具和语言，这些工具和语言正好适用于给定任务——不多也不少。这种方法有助于通过设计创建安全、可维护和高效的系统。它强调了深思熟虑的系统设计和策略性使用约束以在软件开发和更广泛领域实现更好结果的重要性。</p>
+
         </div>
 
         
@@ -174,8 +254,6 @@
                 <span>Tag(s):</span>
                 <span class="tag">
                     
-                    
-                        <a href="/tags/WIP/"># WIP</a>
                     
                         <a href="/tags/Programming/"># Programming</a>
                     

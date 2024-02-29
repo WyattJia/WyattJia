@@ -280,7 +280,7 @@
                 <a class="prev" rel="prev" href="/2019/09/24/2019-09-24-%5B%E8%AF%91%5Dsolving-the-wrong-problem-/">[译]Solving the wrong problem </a>
             
             
-            <a class="next" rel="next" href="/2019/07/07/2019-07-07-%E7%A1%AC%E7%9B%98%E5%86%99%E5%88%B0%E4%B8%80%E5%8D%8A%E6%97%B6%EF%BC%8C%E7%AA%81%E7%84%B6%E6%96%AD%E7%94%B5%E4%BA%86%E6%80%8E%E4%B9%88%E5%8A%9E?%E2%80%94%E2%80%94-reed-solomon-%E7%BA%A0%E5%88%A0%E7%A0%81%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/">硬盘写到一半时，突然断电了怎么办?—— reed solomon 纠删码原理介绍</a>
+            <a class="next" rel="next" href="/2019/07/07/2019-07-07-%E7%A1%AC%E7%9B%98%E5%86%99%E5%88%B0%E4%B8%80%E5%8D%8A%E6%97%B6%EF%BC%8C%E7%AA%81%E7%84%B6%E6%96%AD%E7%94%B5%E4%BA%86%E6%80%8E%E4%B9%88%E5%8A%9E?%E2%80%94%E2%80%94-reed-solomon-%E7%BA%A0%E5%88%A0%E7%A0%81%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/">数据写到一半时，突然断电了怎么办?</a>
             
         </section>
     <script src="https://giscus.app/client.js"
